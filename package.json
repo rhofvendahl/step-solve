@@ -2,7 +2,7 @@
   "name": "step-solve",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://rhofvendahl.github.io/step-solve",
+  "homepage": "https://stepsolve.us",
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
@@ -22,7 +22,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "echo 'stepsolve.us' > ./build/CNAME && gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
