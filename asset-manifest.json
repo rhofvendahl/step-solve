@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/step-solve/static/css/main.4e75e5f8.chunk.css",
+    "main.js": "/step-solve/static/js/main.ea02dfb6.chunk.js",
+    "main.js.map": "/step-solve/static/js/main.ea02dfb6.chunk.js.map",
+    "runtime-main.js": "/step-solve/static/js/runtime-main.dcf4a6af.js",
+    "runtime-main.js.map": "/step-solve/static/js/runtime-main.dcf4a6af.js.map",
+    "static/js/2.5b8d75a4.chunk.js": "/step-solve/static/js/2.5b8d75a4.chunk.js",
+    "static/js/2.5b8d75a4.chunk.js.map": "/step-solve/static/js/2.5b8d75a4.chunk.js.map",
+    "index.html": "/step-solve/index.html",
+    "static/css/main.4e75e5f8.chunk.css.map": "/step-solve/static/css/main.4e75e5f8.chunk.css.map",
+    "static/js/2.5b8d75a4.chunk.js.LICENSE.txt": "/step-solve/static/js/2.5b8d75a4.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.dcf4a6af.js",
+    "static/js/2.5b8d75a4.chunk.js",
+    "static/css/main.4e75e5f8.chunk.css",
+    "static/js/main.ea02dfb6.chunk.js"
+  ]
+}
