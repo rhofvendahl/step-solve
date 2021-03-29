@@ -3,12 +3,12 @@ import Input from './Input';
 import Step from './Step';
 import Description from './Description';
 import {
-  tokenizeLiteral,
-  tokenize,
-  establishNegatives,
-  resolveNegatives,
-  performSimpleOperation,
-  performOperation,
+  // tokenizeLiteral,
+  // tokenize,
+  // establishNegatives,
+  // resolveNegatives,
+  // performMathOperation,
+  // performOperation,
   evaluate,
   formatTokens
 } from '../solve';
@@ -22,13 +22,13 @@ const Solver = () => {
     // console.log(text);
     setExpression(text);
     const steps = evaluate(text);
-    if (steps !== undefined) {
+    if (steps instanceof Error) {
+      console.log(steps.message);
+    } else {
       steps.forEach((step) => {
         console.log(formatTokens(step));
       });
-    } else {
-      console.log('evaluated undefined')
-    }
+    };
   };
 
   return (
