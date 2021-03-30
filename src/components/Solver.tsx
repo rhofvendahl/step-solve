@@ -1,20 +1,20 @@
 import React from 'react';
-import InputItem from './InputItem';
-import StepItem from './StepItem';
-import DescriptionItem from './DescriptionItem';
+import Input from './Input';
+import Step from './Step';
+import Description from './Description';
 import {
   evaluate,
   formatTokens
 } from '../solve';
 import type {
   // Token,
-  Step
+  Step as StepType
 } from '../solve';
 import '../styles/Solver.css';
 
 const Solver = () => {
   const [expression, setExpression] = React.useState('');
-  const [steps, setSteps] = React.useState<Step[] | null>(null)
+  const [steps, setSteps] = React.useState<StepType[] | null>(null)
   const [error, setError] = React.useState<Error | null>(null);
 
   const updateState = (text: string) => {
@@ -33,8 +33,9 @@ const Solver = () => {
     };
   }
 
+  // Call once at start to sync expression, steps, error.
   React.useEffect(() => {
-    updateState('');
+    updateState('1-2+-(4/2-1)^3*2');
   }, [])
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -45,7 +46,7 @@ const Solver = () => {
   const getDescriptions = () => {
     if (steps !== null && steps.length > 1) {
       return steps.slice(1).map((step, i) => (
-        <DescriptionItem
+        <Description
           key={i}
           description={step.description}
           index={i}
@@ -62,14 +63,14 @@ const Solver = () => {
     } else if (steps !== null && steps.length > 0) {
       return (
         <>
-          <StepItem
+          <Step
             key={0}
             initial={true}
             step={steps[0]}
             index={0}
             />
           {steps.slice(1).map((step, i) => (
-            <StepItem
+            <Step
               key={i+1}
               step={step}
               index={i+1}
@@ -106,7 +107,7 @@ const Solver = () => {
   return (
     <div className='solver'>
       <div className = 'solver-left'>
-        <InputItem
+        <Input
           value={expression}
           onChange={onInputChange}
         />

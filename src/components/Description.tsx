@@ -1,13 +1,13 @@
 import React from 'react';
 import Item, { colors } from './Item';
-import '../styles/DescriptionItem.css';
+import '../styles/Description.css';
 
-type DescriptionItemProps = {
+type DescriptionProps = {
   description: string,
   index: number
 }
 
-const DescriptionItem = ({ description, index }: DescriptionItemProps) => {
+const Description = ({ description, index }: DescriptionProps) => {
   const descriptionColor = colors[(index) % colors.length];
   const getContent = (): React.ReactNode => {
     return (
@@ -21,4 +21,4 @@ const DescriptionItem = ({ description, index }: DescriptionItemProps) => {
   );
 };
 
-export default DescriptionItem;
+export default Description;

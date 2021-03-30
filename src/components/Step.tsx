@@ -1,13 +1,13 @@
 import React from 'react';
 import Item, { colors } from './Item';
 // import { formatTokens } from '../solve';
-import type { Token, Step } from '../solve';
-import '../styles/StepItem.css';
+import type { Token, Step as StepType } from '../solve';
+import '../styles/Step.css';
 // import { tokenToString } from 'typescript';
 
-type StepItemProps = {
+type StepProps = {
   initial?: boolean,
-  step: Step,
+  step: StepType,
   index: number
 }
 
@@ -16,7 +16,7 @@ type IndexedToken = {
   index: number
 }
 
-const StepItem = ({ initial = false, step, index }: StepItemProps) => {
+const Step = ({ initial = false, step, index }: StepProps) => {
   let computeNextInterval = step.computeNext || { start: 0, end: 0 };
   const indexedTokens = step.tokens.map((token, i) => ({ token: token, index: i }));
   const computedColor = step.computed ? colors[(index-1) % colors.length] : 'white';
@@ -54,4 +54,4 @@ const StepItem = ({ initial = false, step, index }: StepItemProps) => {
   );
 };
 
-export default StepItem;
+export default Step;

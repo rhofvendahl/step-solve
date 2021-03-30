@@ -1,13 +1,13 @@
 import React from 'react';
 import Item from './Item';
-import '../styles/InputItem.css';
+import '../styles/Input.css';
 
-type InputItemProps = {
+type InputProps = {
   value: string,
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-const InputItem = ({ value, onChange }: InputItemProps) => {
+const Input = ({ value, onChange }: InputProps) => {
   const getContent = (): React.ReactNode => {
     return (
       <div className='item input'>
@@ -24,4 +24,4 @@ const InputItem = ({ value, onChange }: InputItemProps) => {
   );
 };
 
-export default InputItem;
+export default Input;
