@@ -1,5 +1,4 @@
 import React from 'react';
-import Item from './Item';
 import '../styles/Input.css';
 
 type InputProps = {
@@ -8,19 +7,14 @@ type InputProps = {
 }
 
 const Input = ({ value, onChange }: InputProps) => {
-  const getContent = (): React.ReactNode => {
-    return (
-      <div className='item input'>
-        <input
-          type='text'
-          value={value}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>): void => onChange(event)}
-        />
-      </div>
-    );
-  };
   return (
-    <Item content={getContent()} />
+    <div className='input'>
+      <input
+        type='text'
+        value={value}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>): void => onChange(event)}
+      />
+    </div>
   );
 };
 

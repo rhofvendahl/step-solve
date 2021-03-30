@@ -1,5 +1,5 @@
 import React from 'react';
-import Item, { colors } from './Item';
+import { colors } from '../constants';
 // import { formatTokens } from '../solve';
 import type { Token, Step as StepType } from '../solve';
 import '../styles/Step.css';
@@ -24,33 +24,34 @@ const Step = ({ initial = false, step, index }: StepProps) => {
   console.log(index, computedColor, computeNextColor);
 
   const mapTokens = ({ token, index }: IndexedToken): React.ReactNode => {
-    const adjustedValue = token.value.toString();
+    let adjustedValue = token.value.toString();
+    if (index > 0 && step.tokens[index-1].value !== 'neg') {
+      adjustedValue = ' ' + adjustedValue;
+    }
+    if (adjustedValue === ' neg') {
+      adjustedValue = ' -';
+    }
     if (step.computed !== null && index === step.computed.start) {
       return (<span key={index} className='computed' style={{color: computedColor, fontWeight: 'bold'}}>{adjustedValue}</span>);
     } else {
       return (<span key={index}>{adjustedValue}</span>);
     }
   };
-  const getContent = (): React.ReactNode => {
-    const preComputeNext = indexedTokens.slice(0, computeNextInterval.start).map(mapTokens);
-    const postComputeNext = indexedTokens.slice(computeNextInterval.end).map(mapTokens);
-    const computeNextInner = indexedTokens.slice(computeNextInterval.start, computeNextInterval.end).map(mapTokens);
-    let computeNext = (<></>)
-    if (computeNextInner.length > 0) {
-      computeNext = (<span className='compute-next' style={{border: '2px solid ' + computeNextColor}}>{computeNextInner}</span>)
-    }
-    return (
-      <div className={initial ? 'item step step-initial' : 'item step step-next'}>
-      <span className='expression'>
-        {preComputeNext}
-        {computeNext}
-        {postComputeNext}
-      </span>
-      </div>
-    );
-  };
+  const preComputeNext = indexedTokens.slice(0, computeNextInterval.start).map(mapTokens);
+  const postComputeNext = indexedTokens.slice(computeNextInterval.end).map(mapTokens);
+  const computeNextInner = indexedTokens.slice(computeNextInterval.start, computeNextInterval.end).map(mapTokens);
+  let computeNext = (<></>)
+  if (computeNextInner.length > 0) {
+    computeNext = (<span className='compute-next' style={{border: '2px solid ' + computeNextColor}}>{computeNextInner}</span>)
+  }
   return (
-    <Item content={getContent()} />
+    <div className={initial ? 'step step-initial' : 'step step-next'}>
+    <span className='expression'>
+      {preComputeNext}
+      {computeNext}
+      {postComputeNext}
+    </span>
+    </div>
   );
 };
 

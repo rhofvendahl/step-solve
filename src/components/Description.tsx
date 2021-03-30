@@ -1,5 +1,5 @@
 import React from 'react';
-import Item, { colors } from './Item';
+import { colors } from '../constants';
 import '../styles/Description.css';
 
 type DescriptionProps = {
@@ -9,15 +9,10 @@ type DescriptionProps = {
 
 const Description = ({ description, index }: DescriptionProps) => {
   const descriptionColor = colors[(index) % colors.length];
-  const getContent = (): React.ReactNode => {
-    return (
-      <div className="item description" style={{color: descriptionColor}}>
-        {description}
-      </div>
-    );
-  };
   return (
-    <Item content={getContent()} />
+    <div className='description' style={{color: descriptionColor}}>
+      {description}
+    </div>
   );
 };
 

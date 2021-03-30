@@ -2,6 +2,7 @@ import React from 'react';
 import Input from './Input';
 import Step from './Step';
 import Description from './Description';
+import ErrorMessage from './ErrorMessage';
 import {
   evaluate,
   formatTokens
@@ -95,15 +96,6 @@ const Solver = () => {
       // }
     }
   }
-  const getError = () => {
-    if (error === null) {
-      return null;
-    } else {
-      return (
-        <div className='error'>{error.message}</div>
-      )
-    }
-  };
   return (
     <div className='solver'>
       <div className = 'solver-left'>
@@ -117,7 +109,7 @@ const Solver = () => {
       <div className = 'solver-right'>
         {getSteps()}
       </div>
-      {getError()}
+      <ErrorMessage error={error} />
     </div>
   );
 };
