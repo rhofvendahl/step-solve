@@ -254,9 +254,9 @@ const getOrdinalString = (n: number): string => {
   let suffix = 'th';
   if (lastDigit === 1 && truncated !== 11) {
     suffix = 'st';
-  } else if (lastDigit === 2 && truncated !== 12) {
+  } else if (lastDigit === 2 && truncated != 12) {
     suffix = 'nd';
-  } else if (lastDigit === 3 && truncated !== 13) {
+  } else if (lastDigit === 3 && truncated != 13) {
     suffix = 'rd';
   }
   return nString + suffix;
@@ -264,90 +264,81 @@ const getOrdinalString = (n: number): string => {
 
 // Awkward, but easier & simpler than tracking and passing changes through all of the index-changing operations (math operations, resolving parentheses, resolving negatives).
 // Assumes both sequences describe valid equations.
+// ISSUE: Doesn't handle case where input and output start with same digit (eg. 1^1 -> 1)
 const describeOperation = (prevTokens: Token[], newTokens: Token[]): { operationInput: Interval, operationOutput: Interval, operationDescription: string } => {
-  let i = prevTokens.length-1;
-  let j = newTokens.length-1;
-  // Move along both sets of tokens, iterating backward to ensure that i hits the first operator in cases like "1*1*1" to "1*1".
-  while (i >= 0 && j >= 0 && prevTokens[i].value === newTokens[j].value) {
-    i -= 1;
-    j -= 1;
+  // Find the index of the
+  let i = 0;
+  let j = 0;
+  let hasMatch = true;
+  while (hasMatch) {
+    while (prevTokens[i].type !== 'operator') {
+      i += 1;
+    }
+    while (newTokens[j].type !== 'operator') {
+      j += 1;
+    }
+    hasMatch = prevTokens[i].value === newTokens[j].value;
   }
 
-  // Case where input and output share ending numbers (eg. "1*1+1" to "1+1"), so i continues on to the operator that was resolved.
-    // I believe all remaining cases leave i and j at the end of the input & output sequences.
-    // Including "(1)", where there is no operator; and "1*1*1" to "1*1", where j hits the end of the array.
-  if (prevTokens[i].type === 'operator' && prevTokens[i].value !== ')') {
-    i += 1;
-    j += 1;
+  // TODO: Handle edge cases, like one or both being empty.
+  let inputStart = 0;
+  let outputStart = 0;
+  // Move forward along both sets of tokens to guage how much of the two sequences are the same.
+  while (inputStart < prevTokens.length && outputStart < newTokens.length && prevTokens[inputStart].value === newTokens[outputStart].value) {
+    inputStart += 1;
+    outputStart += 1;
   }
-  const operationOutput: Interval = {
-    start: j,
-    end: j+1
-  };
-  let k = i;
-  // Cases with inputs like "(1)", "(1+1)", "neg(1)", "neg(1+1)".
-  if (prevTokens[i].value === ')') {
-    while (k >= 0 && prevTokens[k].value !== '(') {
-      k -= 1;
-    }
-    if (k > 0 && prevTokens[k-1].value === 'neg') {
-      k -= 1;
-    }
-  // Cases with inputs like "1+1".
-  } else {
-    k -= 2;
+  let inputEnd = prevTokens.length-1;
+  let outputEnd = newTokens.length-1;
+  // Move backward along both sets of tokens to guage how much of the two sequences are the same.
+  while (inputEnd > 0 && outputEnd > 0 && prevTokens[inputEnd].value === newTokens[outputEnd].value) {
+    inputEnd -= 1;
+    outputEnd -= 1;
   }
-  const operationInput: Interval = {
-    start: k,
-    end: i+1
-  }
-  const inputTokens = prevTokens.slice(k, i+1);
-
+  const inputTokens = prevTokens.slice(inputStart, inputEnd+1);
   let operatorIndex = 0;
   for ( ; operatorIndex < inputTokens.length; operatorIndex++) {
-    const token = inputTokens[operatorIndex];
-    if (token.type === 'operator' && typeof token.value === 'string' && !['neg', '(', ')'].includes(token.value)) {
+    if (inputTokens[operatorIndex].type === 'operator' && inputTokens[operatorIndex].value !== '(' && inputTokens[operatorIndex].value !== ')') {
       break;
     }
   }
-  if (operatorIndex === 0 || operatorIndex === inputTokens.length-1) {
-  }
-
   let description: string | undefined = undefined;
   console.log('DESCRIBE OPERATION')
-  console.log('input tokens', formatTokens(inputTokens));
-  console.log('operator index', operatorIndex);
+  console.log('prevTokens', formatTokens(prevTokens))
+  console.log('newTokens', formatTokens(newTokens))
+  console.log('inputTokens', formatTokens(inputTokens))
+  // Catch any index errors resulting from an operator at the start or end (which shouldn't happen);
   if (operatorIndex === 0 || operatorIndex === inputTokens.length-1) {
-    throw new Error('Internal Error: "describeOperation" function recieved a misplaced operator.');
-  // No operator in expression (eg. "(1)" to "1").
-  } else if (operatorIndex === inputTokens.length) {
-    description = 'resolve parentheses';
-  } else if (operatorIndex < inputTokens.length) {
-    const leftOperand = inputTokens[operatorIndex-1].value;
-    const rightOperand = inputTokens[operatorIndex+1].value;
-    if (typeof leftOperand !== 'number' || typeof rightOperand !== 'number') {
-      throw new Error('Internal Error: "describeOperation" function received invalid operands.');
-    }
-    if (inputTokens[operatorIndex].value === '^') {
-      description = 'raise ' + inputTokens[operatorIndex-1].value.toString() + ' to the ' + getOrdinalString(rightOperand) + ' power';
-    } else if (inputTokens[operatorIndex].value === '*') {
-      description = 'multiply ' + inputTokens[operatorIndex-1].value.toString() + ' by ' + inputTokens[operatorIndex+1].value.toString();
-    } else if (inputTokens[operatorIndex].value === '/') {
-      description = 'divide ' + inputTokens[operatorIndex-1].value.toString() + ' by ' + inputTokens[operatorIndex+1].value.toString();
-    } else if (inputTokens[operatorIndex].value === '+') {
-      description = 'add ' + inputTokens[operatorIndex+1].value.toString() + ' to ' + inputTokens[operatorIndex-1].value.toString()
-    } else if (inputTokens[operatorIndex].value === '-') {
-      description = 'subtract ' + inputTokens[operatorIndex+1].value.toString() + ' from ' + inputTokens[operatorIndex-1].value.toString();
-    }  
-  } else {
-
+    throw new Error('Internal Error: "describeOperation" function recieved a misplaced operator.')
+  }
+  const leftOperand = inputTokens[operatorIndex-1].value;
+  const rightOperand = inputTokens[operatorIndex+1].value;
+  if (typeof leftOperand !== 'number' || typeof rightOperand !== 'number') {
+    throw new Error('Internal Error: "describeOperation" function received invalid operands.');
+  }
+  if (inputTokens[operatorIndex].value === '^') {
+    description = 'raise ' + inputTokens[operatorIndex-1].value.toString() + ' to the ' + getOrdinalString(rightOperand) + ' power';
+  } else if (inputTokens[operatorIndex].value === '*') {
+    description = 'multiply ' + inputTokens[operatorIndex-1].value.toString() + ' by ' + inputTokens[operatorIndex+1].value.toString();
+  } else if (inputTokens[operatorIndex].value === '/') {
+    description = 'divide ' + inputTokens[operatorIndex-1].value.toString() + ' by ' + inputTokens[operatorIndex+1].value.toString();
+  } else if (inputTokens[operatorIndex].value === '+') {
+    description = 'add ' + inputTokens[operatorIndex+1].value.toString() + ' to ' + inputTokens[operatorIndex-1].value.toString()
+  } else if (inputTokens[operatorIndex].value === '-') {
+    description = 'subtract ' + inputTokens[operatorIndex+1].value.toString() + ' from ' + inputTokens[operatorIndex-1].value.toString();
   }
   if (description === undefined) {
     throw new Error('Internal Error: function "describeOperation" failed.');
   }
   return {
-    operationInput: operationInput,
-    operationOutput: operationOutput,
+    operationInput: {
+      start: inputStart,
+      end: inputEnd+1
+    },
+    operationOutput: {
+      start: outputStart,
+      end: outputEnd+1
+    },
     operationDescription: description
   };
 };
@@ -408,4 +399,3 @@ export {
     // In theory having early returns makes it so there are guarantees down the line, but that gets messy fast.....
   // Ya, checks and exceptions are all over the place. resolve that.
   // Consider un-refactoring the '"number"' back to '"float" | "integer"', since apparently JS/TS is terrible at discerning floats/ints from numbers
-  // Consider adding "patentheses" type, to simplify checking for "operation but not parentheses".

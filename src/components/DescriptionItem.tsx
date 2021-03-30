@@ -1,15 +1,17 @@
 import React from 'react';
-import Item from './Item';
+import Item, { colors } from './Item';
 import '../styles/DescriptionItem.css';
 
 type DescriptionItemProps = {
-  description: string
+  description: string,
+  index: number
 }
 
-const DescriptionItem = ({ description }: DescriptionItemProps) => {
-  const getContent = () => {
+const DescriptionItem = ({ description, index }: DescriptionItemProps) => {
+  const descriptionColor = colors[(index) % colors.length];
+  const getContent = (): React.ReactNode => {
     return (
-      <div className="item item-description">
+      <div className="item description" style={{color: descriptionColor}}>
         {description}
       </div>
     );

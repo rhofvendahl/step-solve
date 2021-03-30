@@ -8,18 +8,17 @@ import {
   formatTokens
 } from '../solve';
 import type {
-  Token,
+  // Token,
   Step
 } from '../solve';
 import '../styles/Solver.css';
 
 const Solver = () => {
-  const [expression, setExpression] = React.useState("");
+  const [expression, setExpression] = React.useState('');
   const [steps, setSteps] = React.useState<Step[] | null>(null)
   const [error, setError] = React.useState<Error | null>(null);
 
-  const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    const text = event.target.value;
+  const updateState = (text: string) => {
     setExpression(text);
     const evaluateResult = evaluate(text);
     if (evaluateResult instanceof Error) {
@@ -33,6 +32,15 @@ const Solver = () => {
       setSteps(evaluateResult);
       setError(null);
     };
+  }
+
+  React.useEffect(() => {
+    updateState('');
+  }, [])
+
+  const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const text = event.target.value;
+    updateState(text);
   };
 
   const getDescriptions = () => {
@@ -40,7 +48,8 @@ const Solver = () => {
       return steps.slice(1).map((step, i) => (
         <DescriptionItem
           key={i}
-          description={'[Description text.]'}
+          description={step.description}
+          index={i}
         />
       ));
     } else {
@@ -55,13 +64,16 @@ const Solver = () => {
       return (
         <>
           <StepItem
+            key={0}
             initial={true}
             step={steps[0]}
-          />
+            index={0}
+            />
           {steps.slice(1).map((step, i) => (
             <StepItem
-              key={i}
+              key={i+1}
               step={step}
+              index={i+1}
             />
           ))}
        </>
@@ -91,7 +103,7 @@ const Solver = () => {
         />
         {getDescriptions()}
       </div>
-      <div className='solver-middle' />
+      {/* <div className='solver-middle' /> */}
       <div className = 'solver-right'>
         {getSteps()}
       </div>

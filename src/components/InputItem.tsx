@@ -8,9 +8,9 @@ type InputItemProps = {
 }
 
 const InputItem = ({ value, onChange }: InputItemProps) => {
-  const getContent = () => {
+  const getContent = (): React.ReactNode => {
     return (
-      <div className='item-input'>
+      <div className='item input'>
         <input
           type='text'
           value={value}

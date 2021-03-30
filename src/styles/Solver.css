@@ -1,24 +1,25 @@
 .solver {
-  background-color: blue;
+  /* background-color: blue; */
   width: 100%;
   margin-top: 20vh;
   display: flex;
   flex-direction: row;
+  gap: 2rem;
 }
 
 .solver-left, .solver-right {
   flex: 1;
 }
 
-.solver-middle {
+/* .solver-middle {
   width: 1rem;
   background-color: black;
-}
+} */
 
 .solver-left {
-  background-color: green;
+  /* background-color: green; */
 }
 
 .solver-right {
-  background-color: yellow;
+  /* background-color: yellow; */
 }

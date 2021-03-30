@@ -195,6 +195,9 @@ describe('Test "performMathOperation" function.', () => {
 });
 
 describe('Test "performOperation" function.', () => {
+  test('A single number inside a set of parentheses evaluates to that number.', () => {
+    expect(performOperation([openParenToken, oneToken, closeParenToken])).toStrictEqual([oneToken]);
+  });
   test('An operation is performed within a set of parentheses.', () => {
     expect(performOperation([openParenToken, oneToken, plusToken, oneToken, multiplyToken, twoToken, closeParenToken])).toStrictEqual([openParenToken, oneToken, plusToken, twoToken, closeParenToken]);
   });
