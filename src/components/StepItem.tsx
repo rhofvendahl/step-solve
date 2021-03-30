@@ -1,18 +1,18 @@
 import React from 'react';
 import Item from './Item';
 import { formatTokens } from '../solve';
-import type { Token } from '../solve';
+import type { Token, Step } from '../solve';
 import '../styles/StepItem.css';
 
-type StepProps = {
+type StepItemProps = {
   initial?: boolean,
-  step: Token[]
+  step: Step
 }
-const Step = ({ initial=false, step }: StepProps) => {
+const StepItem = ({ initial=false, step }: StepItemProps) => {
   const getContent = () => {
     return (
       <div className={initial ? 'item item-step item-step-initial' : 'item item-step item-step-next'}>
-        {formatTokens(step)}
+        {formatTokens(step.tokens)}
       </div>
     );
   };
@@ -21,4 +21,4 @@ const Step = ({ initial=false, step }: StepProps) => {
   );
 };
 
-export default Step;
+export default StepItem;

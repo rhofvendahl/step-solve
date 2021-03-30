@@ -5,36 +5,41 @@ import {
   resolveNegatives,
   performMathOperation,
   performOperation,
+  describeOperation,
   evaluate,
 } from '../solve';
-import type { Token } from '../solve';
+import type {
+  Token,
+  Interval,
+  Step
+} from '../solve';
 
-const openParenToken: Token = {type: 'operator', value: '('};
-const closeParenToken: Token = {type: 'operator', value: ')'};
-const exponentToken: Token = {type: 'operator', value: '^'};
-const negativeToken: Token = {type: 'operator', value: 'neg'};
-const multiplyToken: Token = {type: 'operator', value: '*'};
-const divideToken: Token = {type: 'operator', value: '/'};
-const plusToken: Token = {type: 'operator', value: '+'};
-const minusToken: Token = {type: 'operator', value: '-'};
+const openParenToken: Token = { type: 'operator', value: '(' };
+const closeParenToken: Token = { type: 'operator', value: ')' };
+const exponentToken: Token = { type: 'operator', value: '^' };
+const negativeToken: Token = { type: 'operator', value: 'neg' };
+const multiplyToken: Token = { type: 'operator', value: '*' };
+const divideToken: Token = { type: 'operator', value: '/' };
+const plusToken: Token = { type: 'operator', value: '+' };
+const minusToken: Token = { type: 'operator', value: '-' };
 
-const negativeOneToken: Token = {type: 'number', value: -1};
-const zeroToken: Token = {type: 'number', value: 0};
-const pointFiveToken: Token = {type: 'number', value: .5};
-const oneToken: Token = {type: 'number', value: 1};
-const twoToken: Token = {type: 'number', value: 2};
-const threeToken: Token = {type: 'number', value: 3};
-const fourToken: Token = {type: 'number', value: 4};
+const negativeOneToken: Token = { type: 'number', value: -1 };
+const zeroToken: Token = { type: 'number', value: 0 };
+const pointFiveToken: Token = { type: 'number', value: .5 };
+const oneToken: Token = { type: 'number', value: 1 };
+const twoToken: Token = { type: 'number', value: 2 };
+const threeToken: Token = { type: 'number', value: 3 };
+const fourToken: Token = { type: 'number', value: 4 };
 
 describe('Test "tokenizeLiteral" function.', () => {
   test('Float literals yield number tokens.', () => {
-    expect(tokenizeLiteral('.1')).toStrictEqual({type: 'number', value: 0.1});
-    expect(tokenizeLiteral('1.')).toStrictEqual({type: 'number', value: 1.0});
-    expect(tokenizeLiteral('1.1')).toStrictEqual({type: 'number', value: 1.1});
+    expect(tokenizeLiteral('.1')).toStrictEqual({ type: 'number', value: 0.1 });
+    expect(tokenizeLiteral('1.')).toStrictEqual({ type: 'number', value: 1.0 });
+    expect(tokenizeLiteral('1.1')).toStrictEqual({ type: 'number', value: 1.1 });
   });
   test('Integer literals yield number tokens.', () => {
-    expect(tokenizeLiteral('0')).toStrictEqual({type: 'number', value: 0});
-    expect(tokenizeLiteral('1')).toStrictEqual({type: 'number', value: 1});
+    expect(tokenizeLiteral('0')).toStrictEqual({ type: 'number', value: 0 });
+    expect(tokenizeLiteral('1')).toStrictEqual({ type: 'number', value: 1 });
   });
   test('Empty strings throw an error.', () => {
     expect(() => tokenizeLiteral('')).toThrow(Error);
@@ -60,42 +65,42 @@ describe('Test "tokenizeLiteral" function.', () => {
 
 describe('Test "tokenize" function.', () => {
   test('Empty strings yield empty token arrays.', () => {
-    expect( tokenize('')).toStrictEqual([]);
+    expect(tokenize('')).toStrictEqual([]);
   });
   test('Single operators yield single operator tokens.', () => {
-    expect(tokenize('(')).toStrictEqual([{type: 'operator', value: '('}]);
-    expect(tokenize(')')).toStrictEqual([{type: 'operator', value: ')'}]);
-    expect(tokenize('^')).toStrictEqual([{type: 'operator', value: '^'}]);
-    expect(tokenize('*')).toStrictEqual([{type: 'operator', value: '*'}]);
-    expect(tokenize('/')).toStrictEqual([{type: 'operator', value: '/'}]);
-    expect(tokenize('+')).toStrictEqual([{type: 'operator', value: '+'}]);
-    expect(tokenize('-')).toStrictEqual([{type: 'operator', value: '-'}]);
+    expect(tokenize('(')).toStrictEqual([{ type: 'operator', value: '(' }]);
+    expect(tokenize(')')).toStrictEqual([{ type: 'operator', value: ')' }]);
+    expect(tokenize('^')).toStrictEqual([{ type: 'operator', value: '^' }]);
+    expect(tokenize('*')).toStrictEqual([{ type: 'operator', value: '*' }]);
+    expect(tokenize('/')).toStrictEqual([{ type: 'operator', value: '/' }]);
+    expect(tokenize('+')).toStrictEqual([{ type: 'operator', value: '+' }]);
+    expect(tokenize('-')).toStrictEqual([{ type: 'operator', value: '-' }]);
   });
   test('Integers yield integer tokens.', () => {
-    expect(tokenize('0')).toStrictEqual([{type: 'number', value: 0}]);
-    expect(tokenize('1')).toStrictEqual([{type: 'number', value: 1}]);
-    expect(tokenize('00')).toStrictEqual([{type: 'number', value: 0}]);
-    expect(tokenize('01')).toStrictEqual([{type: 'number', value: 1}]);
-    expect(tokenize('1234567890')).toStrictEqual([{type: 'number', value: 1234567890}]);
+    expect(tokenize('0')).toStrictEqual([{ type: 'number', value: 0 }]);
+    expect(tokenize('1')).toStrictEqual([{ type: 'number', value: 1 }]);
+    expect(tokenize('00')).toStrictEqual([{ type: 'number', value: 0 }]);
+    expect(tokenize('01')).toStrictEqual([{ type: 'number', value: 1 }]);
+    expect(tokenize('1234567890')).toStrictEqual([{ type: 'number', value: 1234567890 }]);
   });
   test('Floats yield float tokens.', () => {
-    expect(tokenize('0.')).toStrictEqual([{type: 'number', value: 0}]);
-    expect(tokenize('.0')).toStrictEqual([{type: 'number', value: 0}]);
-    expect(tokenize('1.')).toStrictEqual([{type: 'number', value: 1.0}]);
-    expect(tokenize('.1')).toStrictEqual([{type: 'number', value: 0.1}]);
+    expect(tokenize('0.')).toStrictEqual([{ type: 'number', value: 0 }]);
+    expect(tokenize('.0')).toStrictEqual([{ type: 'number', value: 0 }]);
+    expect(tokenize('1.')).toStrictEqual([{ type: 'number', value: 1.0 }]);
+    expect(tokenize('.1')).toStrictEqual([{ type: 'number', value: 0.1 }]);
     expect(tokenize('1234567890.1234567890')[0].value).toBeCloseTo(1234567890.1234567890);
   });
   test('Spaces don\'t yield tokens.', () => {
     expect(tokenize(' ')).toStrictEqual([]);
     expect(tokenize('     ')).toStrictEqual([]);
-    expect(tokenize('  1  ')).toStrictEqual([{type: 'number', value: 1}]);
-    expect(tokenize('1   2')).toStrictEqual([{type: 'number', value: 1}, {type: 'number', value: 2}]);
+    expect(tokenize('  1  ')).toStrictEqual([{ type: 'number', value: 1 }]);
+    expect(tokenize('1   2')).toStrictEqual([{ type: 'number', value: 1 }, { type: 'number', value: 2 }]);
   });
   // TODO: Test that integers don't yield float tokens, floats don't yield integer tokens.
   test('Input strings yield appropriate token arrays', () => {
-    expect(tokenize('1 2 3')).toStrictEqual([{type: 'number', value: 1}, {type: 'number', value: 2}, {type: 'number', value: 3}]);
-    expect(tokenize('(1)')).toStrictEqual([{type: 'operator', value: '('}, {type: 'number', value: 1}, {type: 'operator', value: ')'}]);
-    expect(tokenize('2^3')).toStrictEqual([{type: 'number', value: 2}, {type: 'operator', value: '^'}, {type: 'number', value: 3}]);
+    expect(tokenize('1 2 3')).toStrictEqual([{ type: 'number', value: 1 }, { type: 'number', value: 2 }, { type: 'number', value: 3 }]);
+    expect(tokenize('(1)')).toStrictEqual([{ type: 'operator', value: '(' }, { type: 'number', value: 1 }, { type: 'operator', value: ')' }]);
+    expect(tokenize('2^3')).toStrictEqual([{ type: 'number', value: 2 }, { type: 'operator', value: '^' }, { type: 'number', value: 3 }]);
   });
   test('Input strings with invalid characters throw errors.', () => {
     expect(() => tokenize('a')).toThrow(Error);
@@ -145,7 +150,7 @@ describe('Test resolveNegatives function.', () => {
     expect(() => resolveNegatives([negativeToken, multiplyToken])).toThrow(Error);
     expect(() => resolveNegatives([negativeToken, openParenToken])).not.toThrow(Error);
     expect(() => resolveNegatives([negativeToken, oneToken])).not.toThrow(Error);
-  });  
+  });
 });
 
 describe('Test "performMathOperation" function.', () => {
@@ -209,69 +214,122 @@ describe('Test "performOperation" function.', () => {
   });
   test('A sequence with (first innermost) empty parentheses throws an error.', () => {
     expect(() => performOperation([openParenToken, closeParenToken])).toThrow(Error);
-  });  
+  });
 });
 
-// NOTE: this won't be going into math and order of operations much, as those are covered above.
+// NOTE: This won't be going into math and order of operations much, as those are covered above.
 describe('Test "evaluate" function.', () => {
   test('An empty string returns an empty steps array.', () => {
     expect(evaluate('')).toStrictEqual([]);
   });
-  test('An single number returns a single step.', () => {
-    expect(evaluate('1')).toStrictEqual([[oneToken]]);
+  test('An single number returns a single step with appropriate tokens.', () => {
+    const steps = evaluate('1');
+    if (steps instanceof Error) {
+      throw steps;
+    } else {
+      expect(steps[0]).toHaveProperty('tokens', [oneToken]);
+    }
   });
   test('An single operator returns an error.', () => {
     expect(evaluate('+')).toBeInstanceOf(Error);
   });
-  test('A simple equation returns appropriate steps.', () => {
-    expect(evaluate('1+2')).toStrictEqual([
-      [oneToken, plusToken, twoToken],
-      [threeToken]
-    ]);
+  test('A simple equation returns steps with appropriate tokens.', () => {
+    const steps = evaluate('1+2');
+    if (steps instanceof Error) {
+      throw steps;
+    } else {
+      expect(steps.map((step) => step.tokens)).toStrictEqual([
+        [oneToken, plusToken, twoToken],
+        [threeToken]
+      ]);
+    }
   });
-  test('An equation with parentheses returns appropriate steps.', () => {
-    expect(evaluate('(1+1)*2')).toStrictEqual([
-      [openParenToken, oneToken, plusToken, oneToken, closeParenToken, multiplyToken, twoToken],
-      [twoToken, multiplyToken, twoToken],
-      [fourToken]
-    ]);
+  test('An equation with parentheses returns steps with appropriate tokens.', () => {
+    const steps = evaluate('(1+1)*2');
+    if (steps instanceof Error) {
+      throw steps;
+    } else {
+      expect(steps.map((step) => step.tokens)).toStrictEqual([
+        [openParenToken, oneToken, plusToken, oneToken, closeParenToken, multiplyToken, twoToken],
+        [twoToken, multiplyToken, twoToken],
+        [fourToken]
+      ]);
+    }
   });
 });
-  // And now, the moment of truth...
-  describe('TEST TAKE HOME DOCUMENT EXAMPLES.', () => {
-  test('Evaluate function passes "VidMob Engineering Take Home Exercise" document examples.', () => {
-    expect(evaluate('1 + 2')).toStrictEqual([
-      [oneToken, plusToken, twoToken],
-      [threeToken]
-    ]);
-    expect(evaluate('4*5/2')).toStrictEqual([
-      [fourToken, multiplyToken, {type: 'number', value: 5}, divideToken, twoToken],
-      [{type: 'number', value: 20}, divideToken, twoToken],
-      [{type: 'number', value: 10}]
-    ]);
-    expect(evaluate('-5+-8--11*2')).toStrictEqual([
-      [
-        {type: 'number', value: -5},
-        plusToken,
-        {type: 'number', value: -8},
-        minusToken,
-        {type: 'number', value: -11},
-        multiplyToken,
-        twoToken
-      ], [{type: 'number', value: -5}, plusToken, {type: 'number', value: -8}, minusToken, {type: 'number', value: -22}],
-      [{type: 'number', value: -13}, minusToken, {type: 'number', value: -22}],
-      [{type: 'number', value: 9}]
-    ]);
-    expect(evaluate('-.32       /.5')).toStrictEqual([
-      [{type: 'number', value: -.32}, divideToken, pointFiveToken],
-      [{type: 'number', value: -.64}],
-    ]);
-    expect(evaluate('(4-2)*3.5')).toStrictEqual([
-      [openParenToken, fourToken, minusToken, twoToken, closeParenToken, multiplyToken, {type: 'number', value: 3.5}],
-      [twoToken, multiplyToken, {type: 'number', value: 3.5}],
-      [{type: 'number', value: 7.0}]
-    ]);
+
+// And now, the moment of truth...
+describe('TEST TAKE HOME DOCUMENT EXAMPLES.', () => {
+  test('Example 1 evaluates correctly.', () => {
+    const steps = evaluate('1 + 2');
+    if (steps instanceof Error) {
+      throw steps;
+    } else {
+      expect(steps.map((step) => step.tokens)).toStrictEqual([
+        [oneToken, plusToken, twoToken],
+        [threeToken]
+      ]);
+    }
+  });
+  test('Example 2 evaluates correctly.', () => {
+    const steps = evaluate('4*5/2');
+    if (steps instanceof Error) {
+      throw steps;
+    } else {
+      expect(steps.map((step) => step.tokens)).toStrictEqual([
+        [fourToken, multiplyToken, { type: 'number', value: 5 }, divideToken, twoToken],
+        [{ type: 'number', value: 20 }, divideToken, twoToken],
+        [{ type: 'number', value: 10 }]
+      ]);
+    }
+  });
+  test('Example 3 evaluates correctly.', () => {
+    const steps = evaluate('-5+-8--11*2');
+    if (steps instanceof Error) {
+      throw steps;
+    } else {
+      expect(steps.map((step) => step.tokens)).toStrictEqual([
+        [
+          { type: 'number', value: -5 },
+          plusToken,
+          { type: 'number', value: -8 },
+          minusToken,
+          { type: 'number', value: -11 },
+          multiplyToken,
+          twoToken
+        ], [{ type: 'number', value: -5 }, plusToken, { type: 'number', value: -8 }, minusToken, { type: 'number', value: -22 }],
+        [{ type: 'number', value: -13 }, minusToken, { type: 'number', value: -22 }],
+        [{ type: 'number', value: 9 }]
+      ]);
+    }
+  });
+  test('Example 4 evaluates correctly.', () => {
+    const steps = evaluate('-.32       /.5');
+    if (steps instanceof Error) {
+      throw steps;
+    } else {
+      expect(steps.map((step) => step.tokens)).toStrictEqual([
+        [{ type: 'number', value: -.32 }, divideToken, pointFiveToken],
+        [{ type: 'number', value: -.64 }],
+      ]);
+    }
+  });
+  test('Example 5 evaluates correctly.', () => {
+    const steps = evaluate('(4-2)*3.5');
+    if (steps instanceof Error) {
+      throw steps;
+    } else {
+      expect(steps.map((step) => step.tokens)).toStrictEqual([
+        [openParenToken, fourToken, minusToken, twoToken, closeParenToken, multiplyToken, { type: 'number', value: 3.5 }],
+        [twoToken, multiplyToken, { type: 'number', value: 3.5 }],
+        [{ type: 'number', value: 7.0 }]
+      ]);
+    }
+  });
+  test('Example 6 evaluates correctly.', () => {
     expect(evaluate('2+-+-4')).toBeInstanceOf(Error);
+  });
+  test('Example 7 evaluates correctly..', () => {
     expect(evaluate('19 + cinnamon')).toBeInstanceOf(Error);
   });
 });

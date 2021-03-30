@@ -11,6 +11,18 @@ export type Token = {
   value: TokenValue
 };
 
+export type Interval = {
+  start: number,
+  end: number
+}
+
+export type Step = {
+  tokens: Token[],
+  description: string | null,
+  computed: Interval | null,
+  computeNext: Interval | null
+}
+
 const tokenizeLiteral = (literal: string): Token => {
   if (!isNaN(Number(literal)) && literal !== '') {
     if (literal.split('.').length === 2) {
@@ -181,6 +193,7 @@ const performMathOperation = (tokens: Token[]): Token[] => {
 };
 
 // Only handles errors to do with parentheses
+// I'm thinking THIS should return a step...
 const performOperation = (tokens: Token[]): Token[] => {
   let parenStart: number | undefined = undefined;
   let parenEnd: number | undefined = undefined;
@@ -231,7 +244,65 @@ const performOperation = (tokens: Token[]): Token[] => {
   }
 };
 
-const evaluate = (text: string): Token[][] | Error => {
+// A lot easier than tracking and passing changes through all of the index-changing operations (math operations, resolving parentheses, resolving negatives).
+// Plus, could in theory describe anything and everything that happened between one set of tokens and the next.
+// Assumes both sequences describe valid equations.
+const describeOperation = (prevTokens: Token[], newTokens: Token[]): { operationInput: Interval, operationOutput: Interval, operationDescription: string } => {
+  // TODO: Handle edge cases, like one or both being empty.
+  let inputStart = 0;
+  let outputStart = 0;
+  // Move forward along both sets of tokens to guage how much of the two sequences are the same.
+  while (inputStart < prevTokens.length && outputStart < newTokens.length && prevTokens[inputStart] === newTokens[outputStart]) {
+    inputStart += 1;
+    outputStart += 1;
+  }
+  let inputEnd = prevTokens.length-1;
+  let outputEnd = newTokens.length-1;
+  // Move backward along both sets of tokens to guage how much of the two sequences are the same.
+  while (inputEnd > 0 && outputEnd > 0 && prevTokens[inputEnd] === newTokens[outputEnd]) {
+    inputEnd -= 1;
+    outputEnd -= 1;
+  }
+  const inputTokens = prevTokens.slice(inputStart, inputEnd+1);
+  let operatorIndex = 0;
+  for ( ; operatorIndex < inputTokens.length; operatorIndex++) {
+    if (inputTokens[operatorIndex].type === 'operator' && inputTokens[operatorIndex].value !== '(' && inputTokens[operatorIndex].value !== ')') {
+      break;
+    }
+  }
+  let description: string | undefined = undefined;
+  // Catch any index errors resulting from an operator at the start or end (which shouldn't happen);
+  if (operatorIndex === 0 || operatorIndex === inputTokens.length-1) {
+    throw new Error('Internal Error: "describeOperation" function recieved token sequences.')
+  }
+  if (inputTokens[operatorIndex].value === '^') {
+    description = 'Raise ' + inputTokens[operatorIndex-1].toString() + " to the " + inputTokens[operatorIndex+1].toString() + " power.";
+  } else if (inputTokens[operatorIndex].value === '*') {
+    description = 'Multiply ' + inputTokens[operatorIndex-1].toString() + " by " + inputTokens[operatorIndex+1].toString() + ".";
+  } else if (inputTokens[operatorIndex].value === '/') {
+    description = 'Divide ' + inputTokens[operatorIndex-1].toString() + " by " + inputTokens[operatorIndex+1].toString() + ".";
+  } else if (inputTokens[operatorIndex].value === '+') {
+    description = 'Add ' + inputTokens[operatorIndex+1].toString() + " to " + inputTokens[operatorIndex-1].toString() + ".";
+  } else if (inputTokens[operatorIndex].value === '-') {
+    description = 'Subtract ' + inputTokens[operatorIndex+1].toString() + " from " + inputTokens[operatorIndex-1].toString() + ".";
+  }
+  if (description === undefined) {
+    throw new Error('Internal Error: function "describeOperation" failed.');
+  }  
+  return {
+    operationInput: {
+      start: inputStart,
+      end: inputEnd+1
+    },
+    operationOutput: {
+      start: outputStart,
+      end: outputEnd+1
+    },
+    operationDescription: description
+  };
+};
+
+const evaluate = (text: string): Step[] | Error => {
   try {
     let tokens = tokenize(text);
     tokens = establishNegatives(tokens);
@@ -241,12 +312,26 @@ const evaluate = (text: string): Token[][] | Error => {
     } else if (tokens.length === 1 && tokens[0].type === 'operator') {
       throw new Error('User Error: Expression cannot consist of a single operator.');
     }
-    let steps = [tokens];
-    while (steps[steps.length-1].length > 1) {
-      tokens = steps[steps.length-1];
-      tokens = performOperation(tokens);
-      steps.push(tokens);
+    let prevStep: Step = {
+      tokens: tokens,
+      description: null,
+      computeNext: null,
+      computed: null,
+    };
+    const steps: Step[] = [];
+    while (prevStep.tokens.length > 1) {
+      const tokens = performOperation(prevStep.tokens);
+      const { operationInput, operationOutput, operationDescription } = describeOperation(prevStep.tokens, tokens);
+      prevStep.computeNext = operationInput;
+      steps.push(prevStep);
+      prevStep = {
+        computeNext: null,
+        tokens: tokens,
+        description: operationDescription,
+        computed: operationOutput
+      }
     }
+    steps.push(prevStep);
     return steps;
   } catch (error) {
     return error;
@@ -260,6 +345,7 @@ export {
   resolveNegatives,
   performMathOperation,
   performOperation,
+  describeOperation,
   evaluate,
   formatTokens
 };

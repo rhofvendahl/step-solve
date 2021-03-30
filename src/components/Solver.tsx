@@ -4,21 +4,18 @@ import StepItem from './StepItem';
 import DescriptionItem from './DescriptionItem';
 import ErrorItem from './ErrorItem';
 import {
-  // tokenizeLiteral,
-  // tokenize,
-  // establishNegatives,
-  // resolveNegatives,
-  // performMathOperation,
-  // performOperation,
   evaluate,
   formatTokens
 } from '../solve';
-import type { Token } from '../solve';
+import type {
+  Token,
+  Step
+} from '../solve';
 import '../styles/Solver.css';
 
 const Solver = () => {
   const [expression, setExpression] = React.useState("");
-  const [steps, setSteps] = React.useState<Token[][] | null>(null)
+  const [steps, setSteps] = React.useState<Step[] | null>(null)
   const [error, setError] = React.useState<Error | null>(null);
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -30,8 +27,8 @@ const Solver = () => {
       setSteps(null);
       setError(evaluateResult);
     } else {
-      evaluateResult.forEach((evaluateResult) => {
-        console.log(formatTokens(evaluateResult));
+      evaluateResult.forEach((step) => {
+        console.log(formatTokens(step.tokens));
       });
       setSteps(evaluateResult);
       setError(null);
