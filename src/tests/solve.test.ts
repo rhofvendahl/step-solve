@@ -7,9 +7,7 @@ import {
   performOperation,
   evaluate,
 } from '../solve';
-import type {
-  Token
-} from '../solve';
+import type { Token } from '../solve';
 
 const openParenToken: Token = {type: 'operator', value: '('};
 const closeParenToken: Token = {type: 'operator', value: ')'};
@@ -216,8 +214,8 @@ describe('Test "performOperation" function.', () => {
 
 // NOTE: this won't be going into math and order of operations much, as those are covered above.
 describe('Test "evaluate" function.', () => {
-  test('An empty string returns an steps arraay with a single empty step.', () => {
-    expect(evaluate('')).toStrictEqual([[]]);
+  test('An empty string returns an empty steps array.', () => {
+    expect(evaluate('')).toStrictEqual([]);
   });
   test('An single number returns a single step.', () => {
     expect(evaluate('1')).toStrictEqual([[oneToken]]);
@@ -279,4 +277,4 @@ describe('Test "evaluate" function.', () => {
 });
 
 // TODO
-  // Make sure token arrays are being replaced and not changed.
+  // Test that token arrays are being replaced and not changed.

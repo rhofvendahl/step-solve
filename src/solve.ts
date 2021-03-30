@@ -1,6 +1,6 @@
 const formatTokens = (tokens: Token[]): string => {
   let formatted = tokens.map((token) => token.value.toString()).join(' ')
-  formatted = formatted.split('neg (').join('- (')
+  formatted = formatted.split('neg (').join('-(')
   return formatted
 }
 
@@ -127,7 +127,7 @@ const performMathOperation = (tokens: Token[]): Token[] => {
 
   const tokenValues: TokenValue[] = tokens.map((token) => token.value);
   const operators = ['^', '*', '/', '+', '-'];
-  let operatorIndex = -1;
+  let operatorIndex: number | undefined = -1;
   for (let i=0; i<operators.length; i++) {
     if (tokenValues.includes(operators[i])) {
       operatorIndex = tokenValues.indexOf(operators[i]);
@@ -135,7 +135,7 @@ const performMathOperation = (tokens: Token[]): Token[] => {
     };
   };
 
-  if (operatorIndex === -1) {
+  if (operatorIndex === undefined) {
     throw new Error('User Error: Multiple tokens in expression with no operator.');
   } else if (operatorIndex === 0) {
     throw new Error('User Error: Expression cannot start with an operator.');
@@ -236,7 +236,9 @@ const evaluate = (text: string): Token[][] | Error => {
     let tokens = tokenize(text);
     tokens = establishNegatives(tokens);
     tokens = resolveNegatives(tokens);
-    if (tokens.length == 1 && tokens[0].type === 'operator') {
+    if (tokens.length === 0) {
+      return [];
+    } else if (tokens.length === 1 && tokens[0].type === 'operator') {
       throw new Error('User Error: Expression cannot consist of a single operator.');
     }
     let steps = [tokens];
@@ -268,7 +270,5 @@ export {
 // TODO
   // Returns and conditionals and exceptions all over the place are leaving things a mess (especially performMathOperation).
     // In theory having early returns makes it so there are guarantees down the line, but that gets messy fast.....
-  // Also idk about using "-1" as index default in that one place.
   // Ya, checks and exceptions are all over the place. resolve that.
-  // ASAP make it so all these funcs can't return undefined... I'd love to remove all the narrowing for that.
-  // Consider un-refactoring the '"float" | "integer"' to '"number"', since apparently JS/TS is terrible at discerning floats/ints from numbers
+  // Consider un-refactoring the '"number"' back to '"float" | "integer"', since apparently JS/TS is terrible at discerning floats/ints from numbers

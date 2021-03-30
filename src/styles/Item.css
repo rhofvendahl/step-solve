@@ -1,0 +1,13 @@
+
+.item-input, .item-step-initial {
+  background-color: red;
+  height: 5rem;
+}
+
+.item-description, .item-step-next {
+  background-color: orange;
+  height: 4rem;
+  margin-top: 1rem;
+}
+
+/* Is coming through. */
