@@ -2,3 +2,16 @@
   text-align: right;
   height: 4rem;
 }
+
+.input input {
+  background-color: #444444;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 1.3rem;
+  border-radius: .4rem;
+  padding-top: .3rem;
+  padding-bottom: .3rem;
+  padding-left: .6rem;
+  padding-right: .6rem;
+}

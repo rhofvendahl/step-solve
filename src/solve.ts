@@ -163,6 +163,9 @@ const performMathOperation = (tokens: Token[]): Token[] => {
   if (typeof leftOperand.value === 'number' && typeof rightOperand.value === 'number') {
     let newValue: number | undefined = undefined;
     if (operator.value === '^') {
+      if (leftOperand.value < 0 && rightOperand.value % 1 !== 0) {
+        throw new Error('User Error: ' + leftOperand.value.toString() + '^' + rightOperand.value.toString() + ' results in an imaginary number, which is not supported.')
+      }
       newValue = Math.pow(leftOperand.value, rightOperand.value);
     } else if (operator.value === '*') {
       newValue = leftOperand.value*rightOperand.value;
