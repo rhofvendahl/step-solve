@@ -2,7 +2,6 @@ import React from 'react';
 import InputItem from './InputItem';
 import StepItem from './StepItem';
 import DescriptionItem from './DescriptionItem';
-import ErrorItem from './ErrorItem';
 import {
   evaluate,
   formatTokens
@@ -79,21 +78,31 @@ const Solver = () => {
        </>
       );
     } else {
-      if (error !== null) {
-        return (
-          <ErrorItem
-            error={error}
-          />
-        );  
-      } else {
-        return (
-          <ErrorItem
-            error={new Error('Internal Error: Evaluation not available.')}
-          />
-        );
-      }
+      return null;
+      // if (error !== null) {
+      //   return (
+      //     <ErrorItem
+      //       error={error}
+      //     />
+      //   );  
+      // } else {
+      //   return (
+      //     <ErrorItem
+      //       error={new Error('Internal Error: Evaluation not available.')}
+      //     />
+      //   );
+      // }
     }
   }
+  const getError = () => {
+    if (error === null) {
+      return null;
+    } else {
+      return (
+        <div className='error'>{error.message}</div>
+      )
+    }
+  };
   return (
     <div className='solver'>
       <div className = 'solver-left'>
@@ -107,6 +116,7 @@ const Solver = () => {
       <div className = 'solver-right'>
         {getSteps()}
       </div>
+      {getError()}
     </div>
   );
 };

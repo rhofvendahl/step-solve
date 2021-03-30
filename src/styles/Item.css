@@ -4,13 +4,6 @@
   height: 4rem;
 }
 
-.input, .step-initial {
-  /* background-color: red; */
-  /* height: 5rem; */
-}
-
 .description, .step-next {
-  /* background-color: orange; */
-  /* height: 4rem; */
   margin-top: 1rem;
 }

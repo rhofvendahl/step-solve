@@ -11,15 +11,10 @@
   flex: 1;
 }
 
-/* .solver-middle {
-  width: 1rem;
-  background-color: black;
-} */
-
-.solver-left {
-  /* background-color: green; */
-}
-
-.solver-right {
-  /* background-color: yellow; */
+.error {
+  color: #CC0B00;
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  font-size: 1.5rem;
 }
