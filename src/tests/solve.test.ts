@@ -14,8 +14,8 @@ import type {
   // Step
 } from '../solve';
 
-const openParenToken: Token = { type: 'operator', value: '(' };
-const closeParenToken: Token = { type: 'operator', value: ')' };
+const openParenToken: Token = { type: 'parentheses', value: '(' };
+const closeParenToken: Token = { type: 'parentheses', value: ')' };
 const exponentToken: Token = { type: 'operator', value: '^' };
 const negativeToken: Token = { type: 'operator', value: 'neg' };
 const multiplyToken: Token = { type: 'operator', value: '*' };
@@ -68,14 +68,16 @@ describe('Test "tokenize" function.', () => {
     expect(tokenize('')).toStrictEqual([]);
   });
   test('Single operators yield single operator tokens.', () => {
-    expect(tokenize('(')).toStrictEqual([{ type: 'operator', value: '(' }]);
-    expect(tokenize(')')).toStrictEqual([{ type: 'operator', value: ')' }]);
     expect(tokenize('^')).toStrictEqual([{ type: 'operator', value: '^' }]);
     expect(tokenize('*')).toStrictEqual([{ type: 'operator', value: '*' }]);
     expect(tokenize('/')).toStrictEqual([{ type: 'operator', value: '/' }]);
     expect(tokenize('+')).toStrictEqual([{ type: 'operator', value: '+' }]);
     expect(tokenize('-')).toStrictEqual([{ type: 'operator', value: '-' }]);
   });
+  test('Single parentheses yield single operator tokens.', () => {
+    expect(tokenize('(')).toStrictEqual([{ type: 'parentheses', value: '(' }]);
+    expect(tokenize(')')).toStrictEqual([{ type: 'parentheses', value: ')' }]);
+  });  
   test('Integers yield integer tokens.', () => {
     expect(tokenize('0')).toStrictEqual([{ type: 'number', value: 0 }]);
     expect(tokenize('1')).toStrictEqual([{ type: 'number', value: 1 }]);
@@ -99,7 +101,7 @@ describe('Test "tokenize" function.', () => {
   // TODO: Test that integers don't yield float tokens, floats don't yield integer tokens.
   test('Input strings yield appropriate token arrays', () => {
     expect(tokenize('1 2 3')).toStrictEqual([{ type: 'number', value: 1 }, { type: 'number', value: 2 }, { type: 'number', value: 3 }]);
-    expect(tokenize('(1)')).toStrictEqual([{ type: 'operator', value: '(' }, { type: 'number', value: 1 }, { type: 'operator', value: ')' }]);
+    expect(tokenize('(1)')).toStrictEqual([{ type: 'parentheses', value: '(' }, { type: 'number', value: 1 }, { type: 'parentheses', value: ')' }]);
     expect(tokenize('2^3')).toStrictEqual([{ type: 'number', value: 2 }, { type: 'operator', value: '^' }, { type: 'number', value: 3 }]);
   });
   test('Input strings with invalid characters throw errors.', () => {
@@ -165,14 +167,14 @@ describe('Test "performMathOperation" function.', () => {
     expect(performMathOperation([threeToken, minusToken, oneToken])).toStrictEqual([twoToken]);
   });
   test('All operations are performed in order.', () => {
-    // Exponentiation before multiplication: 2^2*2 should be 4*2
+    // Exponentiation before multiplication & division: 2^2*2 should be 4*2
     expect(performMathOperation([twoToken, exponentToken, twoToken, multiplyToken, twoToken])).toStrictEqual([fourToken, multiplyToken, twoToken]);
-    // Multiplication before division: 2/2*2 should be 2/4
-    expect(performMathOperation([twoToken, divideToken, twoToken, multiplyToken, twoToken])).toStrictEqual([twoToken, divideToken, fourToken]);
-    // Division before addition: 2/2+2 should be 1+2
+    // Multiplication and division right to left: 2/2*2 should be 1*2
+    expect(performMathOperation([twoToken, divideToken, twoToken, multiplyToken, twoToken])).toStrictEqual([oneToken, multiplyToken, twoToken]);
+    // Multiplication and division before addition & subtraction: 2/2+2 should be 1+2
     expect(performMathOperation([twoToken, divideToken, twoToken, plusToken, twoToken])).toStrictEqual([oneToken, plusToken, twoToken]);
-    // Addition before subtraction: 2-2+2 should be 2-4
-    expect(performMathOperation([twoToken, minusToken, twoToken, plusToken, twoToken])).toStrictEqual([twoToken, minusToken, fourToken]);
+    // Addition & subtraction right to left: 2-2+2 should be 0+2
+    expect(performMathOperation([twoToken, minusToken, twoToken, plusToken, twoToken])).toStrictEqual([zeroToken, plusToken, twoToken]);
   });
   test('A single operator token throws an error.', () => {
     expect(() => performMathOperation([plusToken])).toThrow(Error);

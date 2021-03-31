@@ -3,47 +3,64 @@
 #### By Russell Hofvendahl
 
 ## About
+StepSolve (live at [stepsolve.us](https://stepsolve.us))is a step-by-step calculator, designed to provide an intuitive demonstration of the order of opoerations for arithmetic.
 
 ## Setup
-## Available Scripts
+1. Clone this repo and navigate to the root directory.
+```
+git clone https://github.com/rhofvendahl/zenscape-react
+cd movie_finder_api
+```
 
-In the project directory, you can run:
+2. Install dependencies.
+```
+yarn install
+```
 
-### `yarn start`
+## Scripts
+To serve locally:
+```
+yarn start
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+To run tests:
+```
+yarn test
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+To generate production build:
+```
+yarn build
+```
 
-### `yarn test`
+## Structure
+Below I'll give a quick overview of StepSolve's logic & layout.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Evaluation
+All evaluation logic is in src/solve.ts. The basic algorithm is as follows:
 
-### `yarn build`
+1. The input expression is parsed into tokens representing numbers, operators and parentheses.
+2. Dashes representing negatives (rather than subtraction) are identified, and where possible "resolved" (combined with a following number, which is inverted).
+3. A single operation is performed on the token sequence, determined order of operations.
+4. A description of this operation is generated after the fact (as a simpler alternative to passing meta-information along through each function and sub-function).
+5. 3 and 4 are repeated until a single token remains, at which time the collected token sequences and operation descriptions are returned as a set of "step" objects.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Rendering
+A good entry point for StepSolve's UI is src/components/Solver.tsx, which describes the parent component of all other visible components.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Among these child components I'd recommend checking out "Step", which describes the logic necessary in creating the colored boxes around each "computedFrom" sequence (the part of an expression which contains the tokens about to be operated on) and the matching text color for each "computed" token (the number on the following line that results from that operation).
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Gripes
+In developing this application, I was met with _many_ unexpected gotchas, caveats and edge cases. To list a few:
 
-### `yarn eject`
+#### Negatives
+* Dashes do different things when they signify "negative" versus "subtract", and it took a lot of whiteboarding and headscratching to generate a consistent set of rules for detecting, validating and applying the two operators.
+* One fun one is that in cases like "-2^-3", the dash before 3 is resolved _before_ exponentiation while the dash before 2 is resolved after.
+* Another: when a "neg" sign is followed by an "(", it must be kept around until the parentheses resolves in order to be applied to the resulting number.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+#### Ordinal Suffixes
+* This is pretty inconsequential, but the rules for which letters go at the end of "1st", "2nd", "3rd" etc. are weird.
+* Most ordinals end in "th", unless the last digit is "1", "2", or "3", which have their own - _unless_ the last _two__ digits are "11", "12" or "13".
+* For the sake of ease I just used "th" for all numbers with decimals, though I honestly couldn't say if this is correct.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+All in all, StepSolve provided a great reminder of how hard it is to break down intuitive processes into machine-readable rules.

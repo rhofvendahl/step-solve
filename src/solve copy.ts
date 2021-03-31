@@ -5,7 +5,7 @@ const formatTokens = (tokens: Token[]): string => {
   return formatted
 }
 
-export type TokenType = 'operator' | 'number' | 'parentheses';
+export type TokenType = 'operator' | 'number';
 export type TokenValue = string | number;
 export type Token = {
   type: TokenType,
@@ -50,10 +50,9 @@ const tokenize = (text: string): Token[] => {
       tokens.push(token);
       i = j-1;
     // Char at i is an operator.
-    } else if ('^*/+-'.includes(text.charAt(i))) {
-      tokens.push({type: 'operator', value: text.charAt(i)});
-    } else if ('()'.includes(text.charAt(i))) {
-      tokens.push({type: 'parentheses', value: text.charAt(i)});      
+    } else if ('()^*/+-'.includes(text.charAt(i))) {
+      const token: Token = {type: 'operator', value: text.charAt(i)}
+      tokens.push(token);
     } else if (text.charAt(i) !== ' ') {
       throw new Error('User Error: "' + text[i] + '" is not a valid character.');
     }
@@ -71,8 +70,8 @@ const establishNegatives = (tokens: Token[]): Token[] => {
       // Minus is at the end.
       if (i+1 === tokens.length) {
         isNegative = false;
-      // Minus is followed by an operator or ")" (i.e. if followed by "(" then isNegative would remain "true").
-      } else if (tokens[i+1].type === 'operator' || tokens[i+1].value === ')') {
+      // Minus is followed by an operator other than "(".
+      } else if (tokens[i+1].type === 'operator' && tokens[i+1].value !== '(') {
         isNegative = false;
       // Minus follows a number.
       } else if (i > 0 && tokens[i-1].type === 'number') {
@@ -139,12 +138,13 @@ const performMathOperation = (tokens: Token[]): Token[] => {
     }
   }
 
+  // const tokenValues: TokenValue[] = tokens.map((token) => token.value);
   const operatorGroups: (string | number)[][] = [['^'], ['*', '/'], ['+', '-']];
   let operatorIndex: number | undefined = undefined;
   for (let i=0; i<operatorGroups.length; i++) {
     let j = 0;
     for ( ; j < tokens.length; j+=1) {
-      // If the current token matches the current operator group (eg. "Multiplication and division" from PEMDAS).
+      // TODO explain
       if (operatorGroups[i].includes(tokens[j].value)) {
         operatorIndex = j;
         break;
@@ -194,7 +194,7 @@ const performMathOperation = (tokens: Token[]): Token[] => {
   }
   
   if (newToken === undefined) {
-    throw new Error('Internal Error: performSimpleOperation function failed.');
+    throw new Error('Internal error: performSimpleOperation function failed.');
   } else {
     const leftTokens = tokens.slice(0, operatorIndex-1).map((token) => ({type: token.type, value: token.value}));
     const rightTokens = tokens.slice(operatorIndex+2).map((token) => ({type: token.type, value: token.value}));
@@ -204,6 +204,7 @@ const performMathOperation = (tokens: Token[]): Token[] => {
 };
 
 // Only handles errors to do with parentheses.
+// I'm thinking THIS should return a step...
 const performOperation = (tokens: Token[]): Token[] => {
   let parenStart: number | undefined = undefined;
   let parenEnd: number | undefined = undefined;
@@ -294,10 +295,10 @@ const describeOperation = (prevTokens: Token[], newTokens: Token[]): { operation
     j -= 1;
   }
 
-  // Case where input and output share ending numbers (eg. "1*1+1" to "1+1") so i continued 1 too far, on to the operator that was resolved.
+  // Case where input and output share ending numbers (eg. "1*1+1" to "1+1"), so i continues on to the operator that was resolved.
     // I believe all remaining cases leave i and j at the end of the input & output sequences.
     // Including "(1)", where there is no operator; and "1*1*1" to "1*1", where j hits the end of the array.
-  if (prevTokens[i].type === 'operator') {
+  if (prevTokens[i].type === 'operator' && prevTokens[i].value !== ')') {
     i += 1;
     j += 1;
   }
@@ -327,7 +328,7 @@ const describeOperation = (prevTokens: Token[], newTokens: Token[]): { operation
   let operatorIndex = 0;
   for ( ; operatorIndex < inputTokens.length; operatorIndex++) {
     const token = inputTokens[operatorIndex];
-    if (token.type === 'operator' && token.value !== 'neg') {
+    if (token.type === 'operator' && typeof token.value === 'string' && !['neg', '(', ')'].includes(token.value)) {
       break;
     }
   }
@@ -418,3 +419,13 @@ export {
   formatTokens,
   formatFloat
 };
+
+// NOTE
+  // Preference is to trust token.type, with typeof used when necessary for type narrowing.
+
+// TODO
+  // Returns and conditionals and exceptions all over the place are leaving things a mess (especially performMathOperation).
+    // In theory having early returns makes it so there are guarantees down the line, but that gets messy fast.....
+  // Ya, checks and exceptions are all over the place. resolve that.
+  // Consider un-refactoring the '"number"' back to '"float" | "integer"', since apparently JS/TS is terrible at discerning floats/ints from numbers
+  // Consider adding "patentheses" type, to simplify checking for "operation but not parentheses".
