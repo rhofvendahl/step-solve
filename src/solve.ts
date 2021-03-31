@@ -357,8 +357,6 @@ const describeOperation = (prevTokens: Token[], newTokens: Token[]): { operation
     } else if (inputTokens[operatorIndex].value === '-') {
       description = 'subtract ' + formatFloat(rightOperand, 3) + ' from ' + formatFloat(leftOperand, 3);
     }  
-  } else {
-
   }
   if (description === undefined) {
     throw new Error('Internal Error: function "describeOperation" failed.');

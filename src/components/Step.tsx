@@ -21,6 +21,7 @@ const Step = ({ initial = false, step, index }: StepProps) => {
   const computedColor = step.computed ? colors[(index-1) % colors.length] : 'white';
   const computeNextColor = step.computeNext ? colors[index % colors.length] : 'white';
 
+  // Transform each token into an element, with special rules for "computed" tokens.
   const mapTokens = ({ token, index }: IndexedToken): React.ReactNode => {
     let adjustedValue = token.value;
     if (typeof adjustedValue === 'number') {
@@ -31,7 +32,6 @@ const Step = ({ initial = false, step, index }: StepProps) => {
         adjustedValue = formatFloat(adjustedValue, 3);
       }
     }
-
     if (index > 0 && step.tokens[index-1].value !== 'neg') {
       adjustedValue = ' ' + adjustedValue;
     }
@@ -44,6 +44,7 @@ const Step = ({ initial = false, step, index }: StepProps) => {
       return (<span key={index}>{adjustedValue}</span>);
     }
   };
+  // Establish three subsequences of tokens for before, within and after the "computedFrom" interval.
   const preComputeNext = indexedTokens.slice(0, computeNextInterval.start).map(mapTokens);
   const postComputeNext = indexedTokens.slice(computeNextInterval.end).map(mapTokens);
   const computeNextInner = indexedTokens.slice(computeNextInterval.start, computeNextInterval.end).map(mapTokens);
