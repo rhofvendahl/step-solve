@@ -26,7 +26,7 @@ const Solver = () => {
 
   // Call once at start to sync expression, steps, error.
   React.useEffect(() => {
-    updateState('1-2+(4/2-1.5)^-3.1*2');
+    updateState('1-2+-(4/2-1.5)^-3*22');
   }, [])
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
@@ -71,19 +71,6 @@ const Solver = () => {
       );
     } else {
       return null;
-      // if (error !== null) {
-      //   return (
-      //     <ErrorItem
-      //       error={error}
-      //     />
-      //   );  
-      // } else {
-      //   return (
-      //     <ErrorItem
-      //       error={new Error('Internal Error: Evaluation not available.')}
-      //     />
-      //   );
-      // }
     }
   }
   return (
@@ -95,7 +82,6 @@ const Solver = () => {
         />
         {getDescriptions()}
       </div>
-      {/* <div className='solver-middle' /> */}
       <div className = 'solver-right'>
         {getSteps()}
       </div>
