@@ -247,7 +247,7 @@ const performOperation = (tokens: Token[]): Token[] => {
   }
 };
 
-const getOrdinalString = (n: number): string => {
+const formatOrdinal = (n: number): string => {
   const nString = n.toString();
   if (n % 1 !== 0) {
     return nString + 'th';
@@ -263,6 +263,17 @@ const getOrdinalString = (n: number): string => {
     suffix = 'rd';
   }
   return nString + suffix;
+}
+
+const formatFloat = (number: number, digits: number): string => {
+  let formatted: number | string = number;
+  // Using workaround to assess digits after decimal, as  "3.1 % 1" yields "0.1000000000000000001" (not what we want).
+  if (formatted % 1 !== 0 && formatted.toString().split('.')[1].length > digits) {
+    formatted = parseFloat(number.toFixed(digits)).toString() + '...';
+  } else {
+    formatted = number.toString();
+  }
+  return formatted;
 }
 
 // Awkward, but easier & simpler than tracking and passing changes through all of the index-changing operations (math operations, resolving parentheses, resolving negatives).
@@ -332,15 +343,15 @@ const describeOperation = (prevTokens: Token[], newTokens: Token[]): { operation
       throw new Error('Internal Error: "describeOperation" function received invalid operands.');
     }
     if (inputTokens[operatorIndex].value === '^') {
-      description = 'raise ' + inputTokens[operatorIndex-1].value.toString() + ' to the ' + getOrdinalString(rightOperand) + ' power';
+      description = 'raise ' + formatFloat(leftOperand, 3) + ' to the ' + formatOrdinal(rightOperand) + ' power';
     } else if (inputTokens[operatorIndex].value === '*') {
-      description = 'multiply ' + inputTokens[operatorIndex-1].value.toString() + ' by ' + inputTokens[operatorIndex+1].value.toString();
+      description = 'multiply ' + formatFloat(leftOperand, 3) + ' by ' + formatFloat(rightOperand, 3);
     } else if (inputTokens[operatorIndex].value === '/') {
-      description = 'divide ' + inputTokens[operatorIndex-1].value.toString() + ' by ' + inputTokens[operatorIndex+1].value.toString();
+      description = 'divide ' + formatFloat(leftOperand, 3) + ' by ' + formatFloat(rightOperand, 3);
     } else if (inputTokens[operatorIndex].value === '+') {
-      description = 'add ' + inputTokens[operatorIndex+1].value.toString() + ' to ' + inputTokens[operatorIndex-1].value.toString()
+      description = 'add ' + formatFloat(rightOperand, 3) + ' to ' + formatFloat(leftOperand, 3);
     } else if (inputTokens[operatorIndex].value === '-') {
-      description = 'subtract ' + inputTokens[operatorIndex+1].value.toString() + ' from ' + inputTokens[operatorIndex-1].value.toString();
+      description = 'subtract ' + formatFloat(rightOperand, 3) + ' from ' + formatFloat(leftOperand, 3);
     }  
   } else {
 
@@ -400,7 +411,8 @@ export {
   performOperation,
   describeOperation,
   evaluate,
-  formatTokens
+  formatTokens,
+  formatFloat
 };
 
 // NOTE

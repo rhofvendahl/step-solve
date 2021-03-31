@@ -1,6 +1,7 @@
+import { format } from 'path';
 import React from 'react';
 import { colors } from '../constants';
-// import { formatTokens } from '../solve';
+import { formatFloat } from '../solve';
 import type { Token, Step as StepType } from '../solve';
 import '../styles/Step.css';
 // import { tokenToString } from 'typescript';
@@ -21,10 +22,18 @@ const Step = ({ initial = false, step, index }: StepProps) => {
   const indexedTokens = step.tokens.map((token, i) => ({ token: token, index: i }));
   const computedColor = step.computed ? colors[(index-1) % colors.length] : 'white';
   const computeNextColor = step.computeNext ? colors[index % colors.length] : 'white';
-  console.log(index, computedColor, computeNextColor);
 
   const mapTokens = ({ token, index }: IndexedToken): React.ReactNode => {
-    let adjustedValue = token.value.toString();
+    let adjustedValue = token.value;
+    if (typeof adjustedValue === 'number') {
+      // Display more of decimal portion if it's the final result.
+      if (step.tokens.length === 1) {
+        adjustedValue = formatFloat(adjustedValue, 10);
+      } else {
+        adjustedValue = formatFloat(adjustedValue, 3);
+      }
+    }
+
     if (index > 0 && step.tokens[index-1].value !== 'neg') {
       adjustedValue = ' ' + adjustedValue;
     }
