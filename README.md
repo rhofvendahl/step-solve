@@ -58,7 +58,7 @@ In developing this application, I was met with many unexpected gotchas, caveats 
 #### Negatives
 * Dashes do different things when they signify "negative" versus "subtract", and it took a lot of whiteboarding and headscratching to generate a consistent set of rules for detecting, validating and applying the two operators.
 * One fun one is that in cases like "-2^-3", the dash before 3 is resolved _before_ exponentiation while the dash before 2 is resolved after.
-* Another: when a "neg" sign is followed by an "(", it must be kept around until the parentheses resolves in order to be applied to the resulting number.
+* Another: when a "neg" sign is followed by an "(", it must be kept around until the parentheses resolve in order to be applied to the resulting number.
 
 #### Ordinal Suffixes
 * This is pretty inconsequential, but the rules for which letters go at the end of "1st", "2nd", "3rd" etc. are weird.
