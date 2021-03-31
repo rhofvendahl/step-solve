@@ -53,7 +53,7 @@ A good entry point for StepSolve's UI is src/components/Solver.tsx, which descri
 Among these child components I'd recommend checking out "Step", which describes the logic necessary in creating the colored boxes around each "computedFrom" sequence (the part of an expression which contains the tokens about to be operated on) and the matching text color for each "computed" token (the number on the following line that results from that operation).
 
 ## Gripes
-In developing this application, I was met with _many_ unexpected gotchas, caveats and edge cases. To list a few:
+In developing this application, I was met with many unexpected gotchas, caveats and edge cases. To list a few:
 
 #### Negatives
 * Dashes do different things when they signify "negative" versus "subtract", and it took a lot of whiteboarding and headscratching to generate a consistent set of rules for detecting, validating and applying the two operators.
