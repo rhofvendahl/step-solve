@@ -3,14 +3,8 @@ import Input from './Input';
 import Step from './Step';
 import Description from './Description';
 import ErrorMessage from './ErrorMessage';
-import {
-  evaluate,
-  formatTokens
-} from '../solve';
-import type {
-  // Token,
-  Step as StepType
-} from '../solve';
+import { evaluate } from '../solve';
+import type { Step as StepType } from '../solve';
 import '../styles/Solver.css';
 
 const Solver = () => {
@@ -22,13 +16,9 @@ const Solver = () => {
     setExpression(text);
     const evaluateResult = evaluate(text);
     if (evaluateResult instanceof Error) {
-      console.log(evaluateResult.message);
       setSteps(null);
       setError(evaluateResult);
     } else {
-      evaluateResult.forEach((step) => {
-        console.log(formatTokens(step.tokens));
-      });
       setSteps(evaluateResult);
       setError(null);
     };
@@ -36,7 +26,7 @@ const Solver = () => {
 
   // Call once at start to sync expression, steps, error.
   React.useEffect(() => {
-    updateState('1-2+-(4/2-1)^3*2');
+    updateState('1-2+(4/2-1.5)^-3.1*2');
   }, [])
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {

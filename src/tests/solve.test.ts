@@ -5,13 +5,13 @@ import {
   resolveNegatives,
   performMathOperation,
   performOperation,
-  describeOperation,
+  // describeOperation,
   evaluate,
 } from '../solve';
 import type {
   Token,
-  Interval,
-  Step
+  // Interval,
+  // Step
 } from '../solve';
 
 const openParenToken: Token = { type: 'operator', value: '(' };
@@ -339,3 +339,5 @@ describe('TEST TAKE HOME DOCUMENT EXAMPLES.', () => {
 
 // TODO
   // Test that token arrays are being replaced and not changed.
+  // Test "describeOperation".
+  // Test non-token properties of "evaluate".

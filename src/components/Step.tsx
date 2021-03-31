@@ -1,10 +1,8 @@
-import { format } from 'path';
 import React from 'react';
 import { colors } from '../constants';
 import { formatFloat } from '../solve';
 import type { Token, Step as StepType } from '../solve';
 import '../styles/Step.css';
-// import { tokenToString } from 'typescript';
 
 type StepProps = {
   initial?: boolean,

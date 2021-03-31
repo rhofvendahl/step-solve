@@ -1,3 +1,4 @@
+// Debugging utility.
 const formatTokens = (tokens: Token[]): string => {
   let formatted = tokens.map((token) => token.value.toString()).join(' ')
   formatted = formatted.split('neg (').join('-(')
@@ -195,7 +196,7 @@ const performMathOperation = (tokens: Token[]): Token[] => {
   }
 };
 
-// Only handles errors to do with parentheses
+// Only handles errors to do with parentheses.
 // I'm thinking THIS should return a step...
 const performOperation = (tokens: Token[]): Token[] => {
   let parenStart: number | undefined = undefined;
@@ -328,9 +329,6 @@ const describeOperation = (prevTokens: Token[], newTokens: Token[]): { operation
   }
 
   let description: string | undefined = undefined;
-  console.log('DESCRIBE OPERATION')
-  console.log('input tokens', formatTokens(inputTokens));
-  console.log('operator index', operatorIndex);
   if (operatorIndex === 0 || operatorIndex === inputTokens.length-1) {
     throw new Error('Internal Error: "describeOperation" function recieved a misplaced operator.');
   // No operator in expression (eg. "(1)" to "1").
