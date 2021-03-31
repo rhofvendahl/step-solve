@@ -3,7 +3,7 @@
 #### By Russell Hofvendahl
 
 ## About
-StepSolve (live at [stepsolve.us](https://stepsolve.us))is a step-by-step calculator, designed to provide an intuitive demonstration of the order of opoerations for arithmetic.
+StepSolve (live at [stepsolve.us](https://stepsolve.us)) is a step-by-step calculator, designed to provide an intuitive demonstration of the order of opoerations for arithmetic.
 
 ## Setup
 1. Clone this repo and navigate to the root directory.
@@ -62,7 +62,7 @@ In developing this application I was met with a lot of unexpected gotchas, cavea
 
 #### Ordinal Suffixes
 * This is pretty inconsequential, but the rules for which letters go at the end of "1st", "2nd", "3rd" etc. are weird.
-* Most ordinals end in "th", unless the last digit is "1", "2", or "3", which have their own - _unless_ the last _two__ digits are "11", "12" or "13".
+* Most ordinals end in "th", unless the last digit is "1", "2", or "3", which have their own - _unless_ the last _two_ digits are "11", "12" or "13".
 * For the sake of ease I just used "th" for all numbers with decimals, though I honestly couldn't say if this is correct.
 
 All in all, StepSolve provided a great reminder of how hard it is to break down intuitive processes into machine-readable rules.
