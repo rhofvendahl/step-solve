@@ -138,14 +138,21 @@ const performMathOperation = (tokens: Token[]): Token[] => {
     }
   }
 
-  const tokenValues: TokenValue[] = tokens.map((token) => token.value);
-  const operators = ['^', '*', '/', '+', '-'];
-  let operatorIndex: number | undefined = -1;
-  for (let i=0; i<operators.length; i++) {
-    if (tokenValues.includes(operators[i])) {
-      operatorIndex = tokenValues.indexOf(operators[i]);
+  // const tokenValues: TokenValue[] = tokens.map((token) => token.value);
+  const operatorGroups: (string | number)[][] = [['^'], ['*', '/'], ['+', '-']];
+  let operatorIndex: number | undefined = undefined;
+  for (let i=0; i<operatorGroups.length; i++) {
+    let j = 0;
+    for ( ; j < tokens.length; j+=1) {
+      // TODO explain
+      if (operatorGroups[i].includes(tokens[j].value)) {
+        operatorIndex = j;
+        break;
+      }
+    }
+    if (operatorIndex !== undefined) {
       break;
-    };
+    }
   };
 
   if (operatorIndex === undefined) {

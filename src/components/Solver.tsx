@@ -26,7 +26,7 @@ const Solver = () => {
 
   // Call once at start to sync expression, steps, error.
   React.useEffect(() => {
-    updateState('1-2+-(4/2-1.5)^-3*22');
+    updateState('1-2+-(4/2-1.5)^-3*2');
   }, [])
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
