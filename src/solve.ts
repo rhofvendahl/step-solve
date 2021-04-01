@@ -73,18 +73,13 @@ const establishNegatives = (tokens: Token[]): Token[] => {
       // Minus is at the end.
       if (i+1 === tokens.length) {
         isNegative = false;
-      // Minus is followed by an operator or ")" (i.e. if followed by "(" then isNegative would remain "true").
+      // Minus is followed by an operator or ")" (a user error not handled here).
       } else if (tokens[i+1].type === 'operator' || tokens[i+1].value === ')') {
         isNegative = false;
-      // Minus follows a number.
-      } else if (i > 0 && tokens[i-1].type === 'number') {
+      // Minus follows a number or a ")".
+      } else if (i > 0 && (tokens[i-1].type === 'number' || tokens[i-1].value ===')')) {
         isNegative = false;
       }
-      // // Minus is followed by a number followed by an exponent sign (which operates before negative conversion).
-      // } else if (i+2 < tokens.length && tokens[i+2].value === '^') {
-      //   isNegative = false
-      // }
-
       if (isNegative) {
         newTokens.push({type: 'operator', value: 'neg'})
       } else {
