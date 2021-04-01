@@ -245,11 +245,6 @@ const performMathOperation = (tokens: Token[]): { tokens: Token[], computed: num
     const leftTokens = tokens.slice(0, operatorIndex-1).map((token) => ({type: token.type, value: token.value}));
     const rightTokens = tokens.slice(operatorIndex+2).map((token) => ({type: token.type, value: token.value}));
     const newTokens = leftTokens.concat([newToken]).concat(rightTokens);      
-    console.log('PERFORMMATHOPERATION');
-    console.log('tokens', formatTokens(tokens));
-    console.log('computed', operatorIndex-1);
-    console.log('prevcomputenext', operatorIndex-1, operatorIndex+2);
-    console.log();
     return {
       tokens: newTokens,
       computed: operatorIndex-1,

@@ -160,24 +160,24 @@ describe('Test resolveNegatives function.', () => {
 
 describe('Test "performMathOperation" function.', () => {
   test('A single number token returns as-is.', () => {
-    expect(performMathOperation([oneToken])).toStrictEqual([oneToken]);
+    expect(performMathOperation([oneToken])).toHaveProperty('tokens', [oneToken]);
   });
   test('All operations work as expected.', () => {
-    expect(performMathOperation([twoToken, exponentToken, twoToken])).toStrictEqual([fourToken]);
-    expect(performMathOperation([oneToken, multiplyToken, twoToken])).toStrictEqual([twoToken]);
-    expect(performMathOperation([fourToken, divideToken, twoToken])).toStrictEqual([twoToken]);
-    expect(performMathOperation([oneToken, plusToken, twoToken])).toStrictEqual([threeToken]);
-    expect(performMathOperation([threeToken, minusToken, oneToken])).toStrictEqual([twoToken]);
+    expect(performMathOperation([twoToken, exponentToken, twoToken])).toHaveProperty('tokens', [fourToken]);
+    expect(performMathOperation([oneToken, multiplyToken, twoToken])).toHaveProperty('tokens', [twoToken]);
+    expect(performMathOperation([fourToken, divideToken, twoToken])).toHaveProperty('tokens', [twoToken]);
+    expect(performMathOperation([oneToken, plusToken, twoToken])).toHaveProperty('tokens', [threeToken]);
+    expect(performMathOperation([threeToken, minusToken, oneToken])).toHaveProperty('tokens', [twoToken]);
   });
   test('All operations are performed in order.', () => {
     // Exponentiation before multiplication & division: 2^2*2 should be 4*2
-    expect(performMathOperation([twoToken, exponentToken, twoToken, multiplyToken, twoToken])).toStrictEqual([fourToken, multiplyToken, twoToken]);
+    expect(performMathOperation([twoToken, exponentToken, twoToken, multiplyToken, twoToken])).toHaveProperty('tokens', [fourToken, multiplyToken, twoToken]);
     // Multiplication and division right to left: 2/2*2 should be 1*2
-    expect(performMathOperation([twoToken, divideToken, twoToken, multiplyToken, twoToken])).toStrictEqual([oneToken, multiplyToken, twoToken]);
+    expect(performMathOperation([twoToken, divideToken, twoToken, multiplyToken, twoToken])).toHaveProperty('tokens', [oneToken, multiplyToken, twoToken]);
     // Multiplication and division before addition & subtraction: 2/2+2 should be 1+2
-    expect(performMathOperation([twoToken, divideToken, twoToken, plusToken, twoToken])).toStrictEqual([oneToken, plusToken, twoToken]);
+    expect(performMathOperation([twoToken, divideToken, twoToken, plusToken, twoToken])).toHaveProperty('tokens', [oneToken, plusToken, twoToken]);
     // Addition & subtraction right to left: 2-2+2 should be 0+2
-    expect(performMathOperation([twoToken, minusToken, twoToken, plusToken, twoToken])).toStrictEqual([zeroToken, plusToken, twoToken]);
+    expect(performMathOperation([twoToken, minusToken, twoToken, plusToken, twoToken])).toHaveProperty('tokens', [zeroToken, plusToken, twoToken]);
   });
   test('A single operator token throws an error.', () => {
     expect(() => performMathOperation([plusToken])).toThrow(Error);
@@ -201,16 +201,16 @@ describe('Test "performMathOperation" function.', () => {
 
 describe('Test "performOperation" function.', () => {
   test('A single number inside a set of parentheses evaluates to that number.', () => {
-    expect(performOperation([openParenToken, oneToken, closeParenToken])).toStrictEqual([oneToken]);
+    expect(performOperation([openParenToken, oneToken, closeParenToken])).toHaveProperty('tokens', [oneToken]);
   });
   test('An operation is performed within a set of parentheses.', () => {
-    expect(performOperation([openParenToken, oneToken, plusToken, oneToken, multiplyToken, twoToken, closeParenToken])).toStrictEqual([openParenToken, oneToken, plusToken, twoToken, closeParenToken]);
+    expect(performOperation([openParenToken, oneToken, plusToken, oneToken, multiplyToken, twoToken, closeParenToken])).toHaveProperty('tokens', [openParenToken, oneToken, plusToken, twoToken, closeParenToken]);
   });
   test('An operation within parentheses which return a single number resolves those parentheses.', () => {
-    expect(performOperation([openParenToken, oneToken, plusToken, oneToken, closeParenToken])).toStrictEqual([twoToken])
+    expect(performOperation([openParenToken, oneToken, plusToken, oneToken, closeParenToken])).toHaveProperty('tokens', [twoToken])
   });
   test('A negative sign in front of a number within parentheses is resolved when those parentheses are resolved.', () => {
-    expect(performOperation([negativeToken, openParenToken, oneToken, closeParenToken])).toStrictEqual([negativeOneToken]);
+    expect(performOperation([negativeToken, openParenToken, oneToken, closeParenToken])).toHaveProperty('tokens', [negativeOneToken]);
   });
   // Only throws an error if first innermost parentheses are mismatched
   // (eg. "((1) doesn't throw an error, because it stops at "(1)"").

@@ -67,6 +67,3 @@ const Step = ({ initial = false, step, index }: StepProps) => {
 };
 
 export default Step;
-
-// ISSUES
-  // "+-1" appearing instead of "+ -1"
