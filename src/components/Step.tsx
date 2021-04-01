@@ -16,14 +16,20 @@ type IndexedToken = {
 }
 
 const Step = ({ initial = false, step, index }: StepProps) => {
-  let computeNextInterval = step.computeNext || { start: 0, end: 0 };
+  let computeNextInterval = step.computeNext;
+  if (computeNextInterval === null) {
+    computeNextInterval = { start: 0, end: 0}
+  }
   const indexedTokens = step.tokens.map((token, i) => ({ token: token, index: i }));
-  const computedColor = step.computed ? colors[(index-1) % colors.length] : 'white';
-  const computeNextColor = step.computeNext ? colors[index % colors.length] : 'white';
+  const computedColor = step.computed !== null ? colors[(index-1) % colors.length] : 'white';
+  const computeNextColor = step.computeNext !== null ? colors[index % colors.length] : 'white';
 
   // Transform each token into an element, with special rules for "computed" tokens.
   const mapTokens = ({ token, index }: IndexedToken): React.ReactNode => {
     let adjustedValue = token.value;
+    if (adjustedValue === 'neg') {
+      adjustedValue = '-';
+    }
     if (typeof adjustedValue === 'number') {
       // Display more of decimal portion if it's the final result.
       if (step.tokens.length === 1) {
@@ -35,10 +41,7 @@ const Step = ({ initial = false, step, index }: StepProps) => {
     if (index > 0 && step.tokens[index-1].value !== 'neg') {
       adjustedValue = ' ' + adjustedValue;
     }
-    if (adjustedValue === ' neg') {
-      adjustedValue = ' -';
-    }
-    if (step.computed !== null && index === step.computed.start) {
+    if (step.computed !== null && index === step.computed) {
       return (<span key={index} className='computed' style={{color: computedColor, fontWeight: 'bold'}}>{adjustedValue}</span>);
     } else {
       return (<span key={index}>{adjustedValue}</span>);
@@ -64,3 +67,6 @@ const Step = ({ initial = false, step, index }: StepProps) => {
 };
 
 export default Step;
+
+// ISSUES
+  // "+-1" appearing instead of "+ -1"

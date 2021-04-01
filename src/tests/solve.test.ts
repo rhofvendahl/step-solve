@@ -124,9 +124,9 @@ describe('Test "establishNegatives" function.', () => {
   test('A minus that follows a number is not established as a negative.', () => {
     expect(establishNegatives([oneToken, minusToken])).toStrictEqual([oneToken, minusToken]);
   });
-  test('A minus followed by a number followed by an exponent sign is not established as a negative.', () => {
-    expect(establishNegatives([minusToken, oneToken, exponentToken])).toStrictEqual([minusToken, oneToken, exponentToken]);
-  });
+  // test('A minus followed by a number followed by an exponent sign is not established as a negative.', () => {
+  //   expect(establishNegatives([minusToken, oneToken, exponentToken])).toStrictEqual([minusToken, oneToken, exponentToken]);
+  // });
   test('A minus not disqualified by the above cases is established as a negative.', () => {
     expect(establishNegatives([minusToken, oneToken])).toStrictEqual([negativeToken, oneToken]);
     expect(establishNegatives([minusToken, openParenToken])).toStrictEqual([negativeToken, openParenToken]);
@@ -138,9 +138,12 @@ describe('Test resolveNegatives function.', () => {
   test('A negative sign followed by an open paren remains a negative sign.', () => {
     expect(resolveNegatives([negativeToken, openParenToken])).toStrictEqual([negativeToken, openParenToken]);
   });
-  test('A negative sign followed by a number flips that number\'s sign.', () => {
+  test('A negative sign followed by a number NOT followed by "^" flips that number\'s sign.', () => {
     expect(resolveNegatives([negativeToken, oneToken])).toStrictEqual([negativeOneToken]);
     expect(resolveNegatives([negativeToken, negativeOneToken])).toStrictEqual([oneToken]);
+  });
+  test('A negative sign followed by a numbe followed by "^" is NOT resolved.', () => {
+    expect(resolveNegatives([negativeToken, oneToken, exponentToken, oneToken])).toStrictEqual([negativeToken, oneToken, exponentToken, oneToken])
   });
   test('A negative sign followed by a zero resolves to a (non-negative) zero.', () => {
     expect(resolveNegatives([negativeToken, zeroToken])).toStrictEqual([zeroToken])

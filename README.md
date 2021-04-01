@@ -41,9 +41,8 @@ All evaluation logic is in src/solve.ts. The basic algorithm is as follows:
 
 1. The input expression is parsed into tokens representing numbers, operators and parentheses.
 2. Dashes representing negatives (rather than subtraction) are identified, and where possible "resolved" (combined with a following number, which is inverted).
-3. A single operation is performed on the token sequence, determined order of operations.
-4. A description of this operation is generated after the fact (as a simpler alternative to passing meta-information along through each function and sub-function amidst changing indices).
-5. 3 and 4 are repeated until a single token remains, at which time the collected token sequences and operation descriptions are returned as a set of "step" objects.
+3. A single operation is performed on the token sequence as determined by order of operations, and any eligible negative signs are resolved. This operation returns a new token sequence as well as some meta-data on the operation performed.
+5. 3 is repeated until a single token remains, at which time the collected token sequences and meta-data are returned as a set of "step" objects.
 
 It may be worth noting that this step-by-step approach represents an intentional sacrifice of simplicity & efficiency for human readable output.
 

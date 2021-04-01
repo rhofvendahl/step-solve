@@ -1,3 +1,5 @@
+import Description from "./components/Description";
+
 // Debugging utility.
 const formatTokens = (tokens: Token[]): string => {
   let formatted = tokens.map((token) => token.value.toString()).join(' ')
@@ -20,7 +22,7 @@ export type Interval = {
 export type Step = {
   tokens: Token[],
   description: string,
-  computed: Interval | null,
+  computed: number | null,
   computeNext: Interval | null
 }
 
@@ -77,10 +79,11 @@ const establishNegatives = (tokens: Token[]): Token[] => {
       // Minus follows a number.
       } else if (i > 0 && tokens[i-1].type === 'number') {
         isNegative = false;
-      // Minus is followed by a number followed by an exponent sign (which operates before negative conversion).
-      } else if (i+2 < tokens.length && tokens[i+2].value === '^') {
-        isNegative = false
       }
+      // // Minus is followed by a number followed by an exponent sign (which operates before negative conversion).
+      // } else if (i+2 < tokens.length && tokens[i+2].value === '^') {
+      //   isNegative = false
+      // }
 
       if (isNegative) {
         newTokens.push({type: 'operator', value: 'neg'})
@@ -100,158 +103,30 @@ const resolveNegatives = (tokens: Token[]): Token[] => {
   let newTokens: Token[] = [];
   for (let i=0; i<tokens.length; i++) {
     if (tokens[i].value === 'neg') {
-      // Is at the end of expression (internal because it shouldn't have been converted if at end).
+      // Handle bad "neg"s.
       if (i+1 >= tokens.length) {
         throw new Error('Internal Error: Expression cannot end with a "neg" operator.');
-      } else {
-        const nextToken = tokens[i+1];
-        // Is followed by "(".
-        if (nextToken.value === '(') {
-          newTokens.push({type: 'operator', value: 'neg'});
-        // Is followed by a number.
-        } else if (typeof nextToken.value == 'number') {
-          let newValue = -1 * nextToken.value;
-          // DO NOT resolve "neg 0" to "-0".
-          if (nextToken.value === 0) {
-            newValue = 0;
-          }
-          newTokens.push({type: 'number', value: newValue});
-          i += 1;
-        // Is followed by something other than "(" or a number (internal because shouldn't have been converted if so).
-        } else {
-          throw new Error('Internal Error: "neg"s must be followed by "(" or a number.');
+      } else if (tokens[i+1].type !== 'number' && tokens[i+1].value !== '(') {
+        throw new Error('Internal Error: "neg"s must be followed by "(" or a number.');
+      }
+      const nextToken = tokens[i+1];
+      // If "neg" followed by a number that's not followed by "^".
+      if (typeof nextToken.value === 'number' && !(i+2 < tokens.length && tokens[i+2].value === '^')) {
+        let newValue = -1 * nextToken.value;
+        // Prevent "-0" values.
+        if (newValue === -0) {
+          newValue = 0;
         }
+        newTokens.push({type: 'number', value: newValue});
+        i += 1;
+      } else {
+        newTokens.push({type: 'operator', value: 'neg'});
       }
     } else {
       newTokens.push({type: tokens[i].type, value: tokens[i].value});
     }
   }
   return newTokens;
-};
-
-// Assumes no "neg"s or parentheses; handles most other input logic errors.
-const performMathOperation = (tokens: Token[]): Token[] => {
-  if (tokens.length === 1) {
-    if (tokens[0].type === 'operator') {
-      throw new Error('User Error: Expression cannot consist only of an operator.');
-    } else {
-      return [{type: 'number', value: tokens[0].value}]; 
-    }
-  }
-
-  const operatorGroups: (string | number)[][] = [['^'], ['*', '/'], ['+', '-']];
-  let operatorIndex: number | undefined = undefined;
-  for (let i=0; i<operatorGroups.length; i++) {
-    let j = 0;
-    for ( ; j < tokens.length; j+=1) {
-      // If the current token matches the current operator group (eg. "Multiplication and division" from PEMDAS).
-      if (operatorGroups[i].includes(tokens[j].value)) {
-        operatorIndex = j;
-        break;
-      }
-    }
-    if (operatorIndex !== undefined) {
-      break;
-    }
-  };
-
-  if (operatorIndex === undefined) {
-    throw new Error('User Error: Multiple tokens in expression with no operator.');
-  } else if (operatorIndex === 0) {
-    throw new Error('User Error: Expression cannot start with an operator.');
- } else if (operatorIndex === tokens.length-1) {
-   throw new Error('User Error: Expression cannot end with an operator.');
-  }
-
-  let newToken: Token | undefined = undefined;
-
-  const leftOperand: Token = tokens[operatorIndex-1];
-  const rightOperand: Token = tokens[operatorIndex+1];
-  const operator: Token = tokens[operatorIndex];
-  if (typeof leftOperand.value === 'number' && typeof rightOperand.value === 'number') {
-    let newValue: number | undefined = undefined;
-    if (operator.value === '^') {
-      if (leftOperand.value < 0 && rightOperand.value % 1 !== 0) {
-        throw new Error('User Error: ' + leftOperand.value.toString() + '^' + rightOperand.value.toString() + ' results in an imaginary number, which is not supported.')
-      }
-      newValue = Math.pow(leftOperand.value, rightOperand.value);
-    } else if (operator.value === '*') {
-      newValue = leftOperand.value*rightOperand.value;
-    } else if (operator.value === '/') {
-      newValue = leftOperand.value/rightOperand.value;
-    } else if (operator.value === '+') {
-      newValue = leftOperand.value+rightOperand.value;
-    } else if (operator.value === '-') {
-      newValue = leftOperand.value-rightOperand.value;
-    }
-    if (newValue === undefined) {
-      throw new Error('Internal Error: "' + operator.value + '" operator not recognized.');
-    } else {
-      newToken = {type: 'number', value: newValue};
-    }
-  } else {
-    throw new Error('User Error: "' + operator.value + '" operator requires numeric operands.');
-  }
-  
-  if (newToken === undefined) {
-    throw new Error('Internal Error: performSimpleOperation function failed.');
-  } else {
-    const leftTokens = tokens.slice(0, operatorIndex-1).map((token) => ({type: token.type, value: token.value}));
-    const rightTokens = tokens.slice(operatorIndex+2).map((token) => ({type: token.type, value: token.value}));
-    const newTokens = leftTokens.concat([newToken]).concat(rightTokens);      
-    return newTokens;
-  }
-};
-
-// Only handles errors to do with parentheses.
-const performOperation = (tokens: Token[]): Token[] => {
-  let parenStart: number | undefined = undefined;
-  let parenEnd: number | undefined = undefined;
-  for (let i=0; i<tokens.length; i++) {
-    if (tokens[i].value === '(') {
-      parenStart = i;
-    } else if (tokens[i].value === ')') {
-      parenEnd = i;
-      break;
-    }
-  }
-
-  if ((parenStart === undefined) !== (parenEnd === undefined)) {
-    throw new Error('User Error: Mismatched parentheses.');
-  }
-
-  let newTokens: Token[] | undefined = undefined;
-
-  // We'll be working within parentheses.
-  if (parenStart !== undefined && parenEnd !== undefined) {
-    const contents: Token[] = tokens.slice(parenStart+1, parenEnd);
-    if (contents.length === 0) {
-      throw new Error('User Error: Parentheses cannot be empty.');
-    }
-    const contentsOperated = performMathOperation(contents);
-    // Contents operated contains single number.
-    if (contentsOperated.length === 1 && contentsOperated[0].type === 'number') {
-      // Remove parentheses when concatenating.
-      const leftTokens = tokens.slice(0, parenStart).map((token) => ({type: token.type, value: token.value}));
-      const rightTokens = tokens.slice(parenEnd+1).map((token) => ({type: token.type, value: token.value}));
-      newTokens = leftTokens.concat(contentsOperated).concat(rightTokens);
-    // Contents operated contains multiple numbers (error cases handled within perform math operation).
-    } else {
-      const leftTokens = tokens.slice(0, parenStart+1).map((token) => ({type: token.type, value: token.value}));
-      const rightTokens = tokens.slice(parenEnd).map((token) => ({type: token.type, value: token.value}));
-      newTokens = leftTokens.concat(contentsOperated).concat(rightTokens);
-    }
-  // There are no parentheses remaining.
-  } else {
-    newTokens = performMathOperation(tokens);
-  }
-
-  if (newTokens !== undefined) {
-    newTokens = resolveNegatives(newTokens);
-    return newTokens;
-  } else {
-    throw new Error('Internal Error: "performOperation" function failed.');
-  }
 };
 
 const formatOrdinal = (n: number): string => {
@@ -283,88 +158,169 @@ const formatFloat = (number: number, digits: number): string => {
   return formatted;
 }
 
-// Awkward, but easier & simpler than tracking and passing changes through all of the index-changing operations (math operations, resolving parentheses, resolving negatives).
-// Assumes both sequences describe valid equations.
-const describeOperation = (prevTokens: Token[], newTokens: Token[]): { operationInput: Interval, operationOutput: Interval, operationDescription: string } => {
-  let i = prevTokens.length-1;
-  let j = newTokens.length-1;
-  // Move along both sets of tokens, iterating backward to ensure that i hits the first operator in cases like "1*1*1" to "1*1".
-  while (i >= 0 && j >= 0 && prevTokens[i].value === newTokens[j].value) {
-    i -= 1;
-    j -= 1;
+// Assumes no "neg"s or parentheses; handles most other input logic errors.
+const performMathOperation = (tokens: Token[]): { tokens: Token[], computed: number, prevComputeNext: Interval, description: string } => {
+  if (tokens.length === 1) {
+    if (tokens[0].type === 'operator') {
+      throw new Error('User Error: Expression cannot consist only of an operator.');
+    } else {
+      return { tokens: [{type: 'number', value: tokens[0].value}], computed: 0, prevComputeNext: { start: 0, end: 1 }, description: 'resolve parentheses' }; 
+    }
   }
 
-  // Case where input and output share ending numbers (eg. "1*1+1" to "1+1") so i continued 1 too far, on to the operator that was resolved.
-    // I believe all remaining cases leave i and j at the end of the input & output sequences.
-    // Including "(1)", where there is no operator; and "1*1*1" to "1*1", where j hits the end of the array.
-  if (prevTokens[i].type === 'operator') {
-    i += 1;
-    j += 1;
-  }
-  const operationOutput: Interval = {
-    start: j,
-    end: j+1
-  };
-  let k = i;
-  // Cases with inputs like "(1)", "(1+1)", "neg(1)", "neg(1+1)".
-  if (prevTokens[i].value === ')') {
-    while (k >= 0 && prevTokens[k].value !== '(') {
-      k -= 1;
-    }
-    if (k > 0 && prevTokens[k-1].value === 'neg') {
-      k -= 1;
-    }
-  // Cases with inputs like "1+1".
-  } else {
-    k -= 2;
-  }
-  const operationInput: Interval = {
-    start: k,
-    end: i+1
-  }
-  const inputTokens = prevTokens.slice(k, i+1);
-
-  let operatorIndex = 0;
-  for ( ; operatorIndex < inputTokens.length; operatorIndex++) {
-    const token = inputTokens[operatorIndex];
-    if (token.type === 'operator' && token.value !== 'neg') {
+  let operatorIndex: number | undefined = undefined;
+  // Exponents are right-associative, so are applied right to left.
+  for (let i=tokens.length-1; i >= 0; i--) {
+    if (tokens[i].value === '^') {
+      operatorIndex = i;
       break;
     }
   }
-  if (operatorIndex === 0 || operatorIndex === inputTokens.length-1) {
+  // Search for "*"s or "/"s, left to right.
+  if (operatorIndex === undefined) {
+    for (let i=0; i < tokens.length; i++) {
+      if (tokens[i].value === '*' || tokens[i].value === '/') {
+        operatorIndex = i;
+        break;
+      }
+    }
+  }
+  // Search for "+"s or "-"s, left to right.
+  if (operatorIndex === undefined) {
+    for (let i=0; i < tokens.length; i++) {
+      if (tokens[i].value === '+' || tokens[i].value === '-') {
+        operatorIndex = i;
+        break;
+      }
+    }
   }
 
-  let description: string | undefined = undefined;
-  if (operatorIndex === 0 || operatorIndex === inputTokens.length-1) {
-    throw new Error('Internal Error: "describeOperation" function recieved a misplaced operator.');
-  // No operator in expression (eg. "(1)" to "1").
-  } else if (operatorIndex === inputTokens.length) {
-    description = 'resolve parentheses';
-  } else if (operatorIndex < inputTokens.length) {
-    const leftOperand = inputTokens[operatorIndex-1].value;
-    const rightOperand = inputTokens[operatorIndex+1].value;
-    if (typeof leftOperand !== 'number' || typeof rightOperand !== 'number') {
-      throw new Error('Internal Error: "describeOperation" function received invalid operands.');
+  if (operatorIndex === undefined) {
+    throw new Error('User Error: Multiple tokens in expression with no operator.');
+  } else if (operatorIndex === 0) {
+    throw new Error('User Error: Expression cannot start with an operator.');
+ } else if (operatorIndex === tokens.length-1) {
+   throw new Error('User Error: Expression cannot end with an operator.');
+  }
+
+  let newToken: Token | undefined = undefined;
+
+  const leftOperand: Token = tokens[operatorIndex-1];
+  const rightOperand: Token = tokens[operatorIndex+1];
+  const operator: Token = tokens[operatorIndex];
+  let description = '';
+  if (typeof leftOperand.value === 'number' && typeof rightOperand.value === 'number') {
+    let newValue: number | undefined = undefined;
+    if (operator.value === '^') {
+      if (leftOperand.value < 0 && rightOperand.value % 1 !== 0) {
+        throw new Error('User Error: ' + leftOperand.value.toString() + '^' + rightOperand.value.toString() + ' results in an imaginary number, which is not supported.')
+      }
+      newValue = Math.pow(leftOperand.value, rightOperand.value);
+      description = 'raise ' + formatFloat(leftOperand.value, 3) + ' to the ' + formatOrdinal(rightOperand.value) + ' power';
+    } else if (operator.value === '*') {
+      newValue = leftOperand.value*rightOperand.value;
+      description = 'multiply ' + formatFloat(leftOperand.value, 3) + ' by ' + formatFloat(rightOperand.value, 3);
+    } else if (operator.value === '/') {
+      newValue = leftOperand.value/rightOperand.value;
+      description = 'divide ' + formatFloat(leftOperand.value, 3) + ' by ' + formatFloat(rightOperand.value, 3);
+    } else if (operator.value === '+') {
+      newValue = leftOperand.value+rightOperand.value;
+      description = 'add ' + formatFloat(rightOperand.value, 3) + ' to ' + formatFloat(leftOperand.value, 3);
+    } else if (operator.value === '-') {
+      newValue = leftOperand.value-rightOperand.value;
+      description = 'subtract ' + formatFloat(rightOperand.value, 3) + ' from ' + formatFloat(leftOperand.value, 3);
     }
-    if (inputTokens[operatorIndex].value === '^') {
-      description = 'raise ' + formatFloat(leftOperand, 3) + ' to the ' + formatOrdinal(rightOperand) + ' power';
-    } else if (inputTokens[operatorIndex].value === '*') {
-      description = 'multiply ' + formatFloat(leftOperand, 3) + ' by ' + formatFloat(rightOperand, 3);
-    } else if (inputTokens[operatorIndex].value === '/') {
-      description = 'divide ' + formatFloat(leftOperand, 3) + ' by ' + formatFloat(rightOperand, 3);
-    } else if (inputTokens[operatorIndex].value === '+') {
-      description = 'add ' + formatFloat(rightOperand, 3) + ' to ' + formatFloat(leftOperand, 3);
-    } else if (inputTokens[operatorIndex].value === '-') {
-      description = 'subtract ' + formatFloat(rightOperand, 3) + ' from ' + formatFloat(leftOperand, 3);
-    }  
+    if (newValue === undefined) {
+      throw new Error('Internal Error: "' + operator.value + '" operator not recognized.');
+    } else {
+      newToken = {type: 'number', value: newValue};
+    }
+  } else {
+    throw new Error('User Error: "' + operator.value + '" operator requires numeric operands.');
   }
-  if (description === undefined) {
-    throw new Error('Internal Error: function "describeOperation" failed.');
+  
+  if (newToken === undefined) {
+    throw new Error('Internal Error: performSimpleOperation function failed.');
+  } else {
+    const leftTokens = tokens.slice(0, operatorIndex-1).map((token) => ({type: token.type, value: token.value}));
+    const rightTokens = tokens.slice(operatorIndex+2).map((token) => ({type: token.type, value: token.value}));
+    const newTokens = leftTokens.concat([newToken]).concat(rightTokens);      
+    console.log('PERFORMMATHOPERATION');
+    console.log('tokens', formatTokens(tokens));
+    console.log('computed', operatorIndex-1);
+    console.log('prevcomputenext', operatorIndex-1, operatorIndex+2);
+    console.log();
+    return {
+      tokens: newTokens,
+      computed: operatorIndex-1,
+      prevComputeNext: { start: operatorIndex-1, end: operatorIndex+2 },
+      description: description
+    }
   }
+};
+
+// Only handles errors to do with parentheses.
+const performOperation = (tokens: Token[]): { tokens: Token[], computed: number, description: string, prevComputeNext: Interval } => {
+  let parenStart: number | undefined = undefined;
+  let parenEnd: number | undefined = undefined;
+  for (let i=0; i<tokens.length; i++) {
+    if (tokens[i].value === '(') {
+      parenStart = i;
+    } else if (tokens[i].value === ')') {
+      parenEnd = i;
+      break;
+    }
+  }
+
+  if ((parenStart === undefined) !== (parenEnd === undefined)) {
+    throw new Error('User Error: Mismatched parentheses.');
+  }
+
+  let newTokens: Token[] | undefined = undefined;
+  let computed: number | undefined = undefined;
+  let description: string | undefined = undefined;
+  let prevComputeNext: Interval | undefined = undefined;
+  // We'll be working within parentheses.
+  if (parenStart !== undefined && parenEnd !== undefined) {
+    const contents: Token[] = tokens.slice(parenStart+1, parenEnd);
+    if (contents.length === 0) {
+      throw new Error('User Error: Parentheses cannot be empty.');
+    }
+    const { tokens: contentsOperated, computed: contentsComputed, prevComputeNext: contentsPrevComputeNext, description: contentsDescription } = performMathOperation(contents);
+    description = contentsDescription;
+    // Contents operated contains single (hopefully) number.
+    if (contentsOperated.length === 1) {
+      // Remove parentheses when concatenating.
+      const leftTokens = tokens.slice(0, parenStart).map((token) => ({type: token.type, value: token.value}));
+      const rightTokens = tokens.slice(parenEnd+1).map((token) => ({type: token.type, value: token.value}));
+      newTokens = leftTokens.concat(contentsOperated).concat(rightTokens);
+      computed = contentsComputed + leftTokens.length;
+      prevComputeNext = { start: contentsPrevComputeNext.start + leftTokens.length, end: contentsPrevComputeNext.end + leftTokens.length+2 };
+    // Contents operated contains multiple numbers (error cases handled within perform math operation).
+    } else {
+      const leftTokens = tokens.slice(0, parenStart+1).map((token) => ({type: token.type, value: token.value}));
+      const rightTokens = tokens.slice(parenEnd).map((token) => ({type: token.type, value: token.value}));
+      newTokens = leftTokens.concat(contentsOperated).concat(rightTokens);
+      computed = contentsComputed + leftTokens.length;
+      prevComputeNext = { start: contentsPrevComputeNext.start + leftTokens.length, end: contentsPrevComputeNext.end + leftTokens.length };
+    }
+  // There are no parentheses remaining.
+  } else {
+    const { tokens: tokensTemp, computed: computedTemp, prevComputeNext: prevComputeNextTemp, description: descriptionTemp } = performMathOperation(tokens);
+    newTokens = tokensTemp;
+    computed = computedTemp;
+    description = descriptionTemp;
+    prevComputeNext = prevComputeNextTemp;
+  }
+  const newTokensResolved = resolveNegatives(newTokens);
+  // NOTE pretty sure we can assume that negatives were only resolved on the left hand side of "computed".
+  const nResolvedNegatives = newTokens.length - newTokensResolved.length;
+  const computedResolved = computed - nResolvedNegatives;
   return {
-    operationInput: operationInput,
-    operationOutput: operationOutput,
-    operationDescription: description
+    tokens: newTokensResolved,
+    computed: computedResolved,
+    description: description,
+    prevComputeNext: prevComputeNext
   };
 };
 
@@ -386,15 +342,14 @@ const evaluate = (text: string): Step[] | Error => {
     };
     const steps: Step[] = [];
     while (prevStep.tokens.length > 1) {
-      const tokens = performOperation(prevStep.tokens);
-      const { operationInput, operationOutput, operationDescription } = describeOperation(prevStep.tokens, tokens);
-      prevStep.computeNext = operationInput;
+      const { tokens, computed, prevComputeNext, description } = performOperation(prevStep.tokens);
+      prevStep.computeNext = prevComputeNext;
       steps.push(prevStep);
       prevStep = {
         computeNext: null,
         tokens: tokens,
-        description: operationDescription,
-        computed: operationOutput
+        description: description,
+        computed: computed
       }
     }
     steps.push(prevStep);
@@ -411,7 +366,7 @@ export {
   resolveNegatives,
   performMathOperation,
   performOperation,
-  describeOperation,
+  // describeOperation,
   evaluate,
   formatTokens,
   formatFloat
